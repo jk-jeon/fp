@@ -7,7 +7,7 @@ It aims to be a building block for higher-level libraries with high-performance 
 `fp` itself does not aim to have fastest string-to-float/float-to-string conversions with the greatest flexibility, because that is a too demanding task. Rather, `fp` focuses on fast mathematical algorithms for converting between binary IEEE-754 floating-point numbers and thier decimal floating-point representations. Implementers of string-to-float/float-to-string procedures then can utilize those algorithms to implement actual functions for parsing/formatting with their own constraints and goals.
 
 # Included Algorithms
-Here is the list of algorithms that `fp` supports (or will support) in a future.
+Here is the list of algorithms that `fp` supports (or will support in a future).
 
 ## Dragonbox
 Shortest-roundtrip binary-to-decimal conversion algorithm. To be prepared.
