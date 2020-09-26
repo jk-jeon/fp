@@ -520,26 +520,7 @@ namespace jkj::fp {
 				else {
 					std::memcpy(buffer, "0.", 1);
 					buffer += 2;
-					
-					while (precision >= 8) {
-						std::memcpy(buffer, "00000000", 8);
-						buffer += 8;
-						precision -= 4;
-					}
-					if (precision >= 4) {
-						std::memcpy(buffer, "0000", 4);
-						buffer += 4;
-						precision -= 4;
-					}
-					if (precision >= 2) {
-						std::memcpy(buffer, "00", 2);
-						buffer += 2;
-						precision -= 2;
-					}
-					if (precision != 1) {
-						*buffer = '0';
-						++buffer;
-					}
+					print_zeros(precision);
 					return buffer;
 				}
 			}
