@@ -30,14 +30,14 @@ namespace jkj::fp {
 	// Fixed-precision formatting in fixed-point form
 	// precision means the number of digits after the decimal point.
 	template <class Float>
-	void to_chars_fixed_precision_fixed_point(Float x, int precision, char* buffer) noexcept {
+	void to_chars_fixed_precision_fixed_point(Float x, char* buffer, int precision) noexcept {
 		assert(precision >= 0);
 	}
 
 	// Fixed-precision formatting in scientific form
 	// precision means the number of significand digits excluding the first digit.
 	template <class Float>
-	char* to_chars_fixed_precision_scientific(Float x, int precision, char* buffer) noexcept {
+	char* to_chars_fixed_precision_scientific(Float x, char* buffer, int precision) noexcept {
 		assert(precision >= 0);
 
 		using ieee754_format_info = ieee754_format_info<ieee754_traits<Float>::format>;
@@ -55,7 +55,7 @@ namespace jkj::fp {
 				number_of_zeros -= 4;
 			}
 			if (number_of_zeros >= 2) {
-				std::memcpy(buffer, "00", 4);
+				std::memcpy(buffer, "00", 2);
 				buffer += 2;
 				number_of_zeros -= 2;
 			}
@@ -315,7 +315,7 @@ namespace jkj::fp {
 							if (remainder >= 5'0000'0000) {
 								// Perform round-up.
 
-								// If digits are all 9's
+								// If digits are all 9's,
 								if (last_non_9_digits_length == 0) {
 									if (!first_digit_printed) {
 										if (++first_digit == 10) {
@@ -329,7 +329,7 @@ namespace jkj::fp {
 										buffer += 2;
 									}
 								}
-								// Otherwise
+								// Otherwise,
 								else {
 									++last_non_9_digits;
 									assert(last_non_9_digits < std::pow(10, last_non_9_digits_length));

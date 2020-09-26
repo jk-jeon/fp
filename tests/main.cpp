@@ -43,6 +43,6 @@ int main()
 			std::size_t(jkj::fp::to_chars_fixed_precision_scientific(x, precision, buffer) - buffer) };
 
 		std::cout << str << std::endl;
-		std::cout << std::setprecision(precision) << x << std::endl;
+		std::cout << std::scientific << std::setprecision(precision) << x << std::endl;
 	}
 }
