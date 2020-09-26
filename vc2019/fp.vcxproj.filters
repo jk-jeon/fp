@@ -19,6 +19,12 @@
     <Filter Include="include\jkj\fp\detail">
       <UniqueIdentifier>{18ba9ba1-d2a7-4899-a375-6fe6fa99514c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="include\jkj\fp\to_chars">
+      <UniqueIdentifier>{df17a2d4-2d79-4433-afae-70ae10cda381}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\jkj\fp\from_chars">
+      <UniqueIdentifier>{7645c3fb-7634-4805-b1d5-a549528373fc}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\tests\ryu_printf\cache_write_helper.h">
@@ -59,6 +65,12 @@
     </ClInclude>
     <ClInclude Include="..\include\jkj\fp\ryu_printf.h">
       <Filter>include\jkj\fp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\jkj\fp\to_chars\to_chars_common.h">
+      <Filter>include\jkj\fp\to_chars</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\jkj\fp\to_chars\fixed_precision.h">
+      <Filter>include\jkj\fp\to_chars</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

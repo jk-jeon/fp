@@ -22,6 +22,7 @@
 #include <cstdint>
 #include <limits>
 #include <type_traits>
+#include <utility>
 
 namespace jkj::fp {
 	namespace detail {
@@ -52,6 +53,18 @@ namespace jkj::fp {
 			}
 			return c;
 		}
+
+		template <class UInt, UInt a, class PowerList>
+		struct pow_table_impl;
+
+		template <class UInt, UInt a, std::size_t... powers>
+		struct pow_table_impl<UInt, a, std::index_sequence<powers...>> {
+			static_assert(std::is_unsigned_v<UInt>);
+			static constexpr UInt table[] = { compute_power<powers>(a)... };
+		};
+
+		template <class UInt, UInt a, std::size_t table_size>
+		using pow_table = pow_table_impl<UInt, a, std::make_index_sequence<table_size>>;
 	}
 }
 

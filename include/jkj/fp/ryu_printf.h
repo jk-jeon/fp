@@ -23,17 +23,12 @@
 #include "detail/log.h"
 #include "detail/ryu_printf_cache.h"
 #include "detail/util.h"
+#include <cassert>
 #include <cstdint>
 
 namespace jkj::fp {
 	template <ieee754_format format>
-	static constexpr int fixed_precision_output_segment_size = 9;
-
-	enum class fixed_precision_callback_return {
-		continue_iteration,
-		ask_remaining_digits,
-		done
-	};
+	static constexpr int ryu_printf_segment_size = 9;
 
 	namespace detail {
 		namespace ryu_printf {
@@ -42,7 +37,7 @@ namespace jkj::fp {
 			{
 				static constexpr auto format = format_;
 
-				static constexpr int segment_size = fixed_precision_output_segment_size<format>;
+				static constexpr int segment_size = ryu_printf_segment_size<format>;
 				static constexpr int segment_bit_size = log::floor_log2_pow10(segment_size) + 1;
 				static_assert(segment_bit_size <= 32);
 				static constexpr auto segment_divisor =
@@ -64,6 +59,8 @@ namespace jkj::fp {
 	// The core of Ryu-printf algorithm.
 	// Iterates over decimal digits segments of fixed size, from left to right,
 	// starting from the first nonzero segment.
+	// The initial segment is in [1,10^eta) where eta is the segment size thus is of variable length,
+	// while other segments are in [10^(eta-1), 10^eta) thus are of fixed length.
 	// The interface is pull-oriented rather than push-oriented;
 	// it is the user who controls the flow, so there is no callback mechanism.
 	// The user can request the object to obtain the next segment.
@@ -116,7 +113,7 @@ namespace jkj::fp {
 				significand_ |= (carrier_uint(1) << significand_bits);
 
 				// n0 = floor((-e-p-1)log10(2) / eta) + 1
-				// Avoids signed division.
+				// Avoid signed division.
 				auto const dividend = log::floor_log10_pow2(-exponent - significand_bits - 1);
 				if (exponent <= -significand_bits - 1) {
 					assert(dividend >= 0);
@@ -139,19 +136,19 @@ namespace jkj::fp {
 				exponent = min_exponent - significand_bits;
 
 				// n0 = floor((-e-p-1)log10(2) / eta) + 1
-				// Avoids signed division.
+				// Avoid signed division.
 				constexpr auto dividend = log::floor_log10_pow2(-min_exponent - 1);
 				static_assert(dividend >= 0);
 				segment_index_ = unsigned(dividend) / unsigned(segment_size) + 1;
-				pow2_exponent_upper_bound_ = -exponent;
+				pow2_exponent_upper_bound_ = 0;
 			}
 
-			// Aligns the implicit bit to the MSB.
+			// Align the implicit bit to the MSB.
 			significand_ <<= (carrier_bits - significand_bits - 1);
 
 			// We will compute the first segment.
 
-			// Avoids signed division.
+			// Avoid signed division.
 			pow2_exponent_ = exponent + segment_index_ * segment_size;
 			if (pow2_exponent_ >= 0) {
 				exponent_index_ = int(unsigned(pow2_exponent_) / unsigned(compression_factor));
@@ -167,7 +164,7 @@ namespace jkj::fp {
 				}
 			}
 
-			// Gets first nonzero segment.
+			// Get first nonzero segment.
 			segment_ = compute_segment();
 			while (segment_ == 0) {
 				increase_segment_index();
@@ -189,10 +186,10 @@ namespace jkj::fp {
 				return false;
 			}
 			else {
-				// Checks if there are reamining nonzero digits,
+				// Check if there are reamining nonzero digits,
 				// which is equivalent to that f * 2^e * 10^(n * eta) is not an integer.
 
-				// Checks the exponent of 2.
+				// Check the exponent of 2.
 				if (pow2_exponent_ < 0 &&
 					!detail::div::divisible_by_power_of_2(significand_,
 						-pow2_exponent_ + (carrier_bits - significand_bits - 1)))
@@ -200,7 +197,7 @@ namespace jkj::fp {
 					return true;
 				}
 
-				// Checks the exponent of 5.
+				// Check the exponent of 5.
 				auto minus_pow5_exponent = -segment_index_ * segment_size;
 				if (minus_pow5_exponent > 0 &&
 					(minus_pow5_exponent > max_power_of_factor_of_5 ||
@@ -286,5 +283,4 @@ namespace jkj::fp {
 	};
 }
 
-#include "detail/undef_macros.h"
 #endif
