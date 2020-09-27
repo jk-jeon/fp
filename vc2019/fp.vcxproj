@@ -245,14 +245,14 @@
     <ClInclude Include="..\include\jkj\fp\ryu_printf.h" />
     <ClInclude Include="..\include\jkj\fp\to_chars\fixed_precision.h" />
     <ClInclude Include="..\include\jkj\fp\to_chars\to_chars_common.h" />
-    <ClInclude Include="..\tests\bigint.h" />
-    <ClInclude Include="..\tests\minmax_euclid.h" />
-    <ClInclude Include="..\tests\ryu_printf\cache_write_helper.h" />
+    <ClInclude Include="..\test\bigint.h" />
+    <ClInclude Include="..\test\minmax_euclid.h" />
+    <ClInclude Include="..\test\ryu_printf\cache_write_helper.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\tests\main.cpp" />
-    <ClCompile Include="..\tests\ryu_printf\generate_cache.cpp" />
-    <ClCompile Include="..\tests\verify_log_computation.cpp" />
+    <ClCompile Include="..\test\main.cpp" />
+    <ClCompile Include="..\test\ryu_printf\generate_cache.cpp" />
+    <ClCompile Include="..\test\verify_log_computation.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
