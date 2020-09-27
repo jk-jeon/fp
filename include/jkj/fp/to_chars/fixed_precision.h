@@ -20,52 +20,17 @@
 
 #include "../ryu_printf.h"
 #include "to_chars_common.h"
+#include "../detail/macros.h"
 #include <cassert>
 #include <cstdint>
-#ifndef NDEBUG
-#include <cmath>	// std::pow
-#endif
+#include <cstring>	// std::memcpy, std::memset
 
 namespace jkj::fp {
-	// Fixed-precision formatting in fixed-point form
-	// precision means the number of digits after the decimal point.
-	template <class Float>
-	void to_chars_fixed_precision_fixed_point(Float x, char* buffer, int precision) noexcept {
-		assert(precision >= 0);
-	}
-
-	// Fixed-precision formatting in scientific form
-	// precision means the number of significand digits excluding the first digit.
-	template <class Float>
-	char* to_chars_fixed_precision_scientific(Float x, char* buffer, int precision) noexcept {
-		assert(precision >= 0);
-
-		using ieee754_format_info = ieee754_format_info<ieee754_traits<Float>::format>;
-
+	namespace detail {
 		// Some common routines
-		auto print_zeros = [&](int number_of_zeros) {
-			while (number_of_zeros >= 8) {
-				std::memcpy(buffer, "00000000", 8);
-				buffer += 8;
-				number_of_zeros -= 8;
-			}
-			if (number_of_zeros >= 4) {
-				std::memcpy(buffer, "0000", 4);
-				buffer += 4;
-				number_of_zeros -= 4;
-			}
-			if (number_of_zeros >= 2) {
-				std::memcpy(buffer, "00", 2);
-				buffer += 2;
-				number_of_zeros -= 2;
-			}
-			if (number_of_zeros != 0) {
-				*buffer = '0';
-				++buffer;
-			}
-		};
-		auto print_number = [&](std::uint32_t number, int length) {
-			auto total_increment = length;
+		JKJ_FORCEINLINE char* print_number(char* buffer, std::uint32_t number, int length) {
+			assert(length >= 0);
+			auto ret = buffer + length;
 			while (length > 4) {
 				auto c = number % 1'0000;
 				number /= 1'0000;
@@ -89,8 +54,40 @@ namespace jkj::fp {
 			else if (length > 0) {
 				*buffer = char('0' + number);
 			}
-			buffer += total_increment;
-		};
+			return ret;
+		}
+		char* print_nine_digits(char* buffer, std::uint32_t number) {
+			std::memcpy(buffer + 7,
+				&detail::radix_100_table[(number % 100) * 2], 2);
+			number /= 100;
+			std::memcpy(buffer + 5,
+				&detail::radix_100_table[(number % 100) * 2], 2);
+			number /= 100;
+			std::memcpy(buffer + 3,
+				&detail::radix_100_table[(number % 100) * 2], 2);
+			number /= 100;
+			std::memcpy(buffer + 1,
+				&detail::radix_100_table[(number % 100) * 2], 2);
+			number /= 100;
+			*buffer = char('0' + number);
+			return buffer + 9;
+		}
+	}
+
+	// Fixed-precision formatting in fixed-point form
+	// precision means the number of digits after the decimal point.
+	template <class Float>
+	void to_chars_fixed_precision_fixed_point(Float x, char* buffer, int precision) noexcept {
+		assert(precision >= 0);
+	}
+
+	// Fixed-precision formatting in scientific form
+	// precision means the number of significand digits excluding the first digit.
+	template <class Float>
+	char* to_chars_fixed_precision_scientific(Float x, char* buffer, int precision) noexcept {
+		assert(precision >= 0);
+
+		using ieee754_format_info = ieee754_format_info<ieee754_traits<Float>::format>;
 
 		// Take care of special cases.
 		auto br = ieee754_bits(x);
@@ -169,304 +166,483 @@ namespace jkj::fp {
 					}
 					*buffer = char('0' + first_digit);
 					++buffer;
-				}
+				} // precision == 0
 				else {
 					char first_digit;
-					bool first_digit_printed;
-					std::uint32_t last_non_9_digits, normalizer;
-					int last_non_9_digits_length;
+					std::uint32_t current_digits, normalizer;
+					int current_digits_length;
 
 					if (rp.current_segment() >= 1'0000'0000) {
 						first_digit = char(rp.current_segment() / 1'0000'0000);
-						last_non_9_digits = rp.current_segment() % 1'0000'0000;
+						current_digits = rp.current_segment() % 1'0000'0000;
 						normalizer = 10;
-						last_non_9_digits_length = 8;
+						current_digits_length = 8;
 					}
 					else if (rp.current_segment() >= 1000'0000) {
 						first_digit = char(rp.current_segment() / 1000'0000);
-						last_non_9_digits = rp.current_segment() % 1000'0000;
+						current_digits = rp.current_segment() % 1000'0000;
 						normalizer = 100;
-						last_non_9_digits_length = 7;
+						current_digits_length = 7;
 					}
 					else if (rp.current_segment() >= 100'0000) {
 						first_digit = char(rp.current_segment() / 100'0000);
-						last_non_9_digits = rp.current_segment() % 100'0000;
+						current_digits = rp.current_segment() % 100'0000;
 						normalizer = 1000;
-						last_non_9_digits_length = 6;
+						current_digits_length = 6;
 					}
 					else if (rp.current_segment() >= 10'0000) {
 						first_digit = char(rp.current_segment() / 10'0000);
-						last_non_9_digits = rp.current_segment() % 10'0000;
+						current_digits = rp.current_segment() % 10'0000;
 						normalizer = 1'0000;
-						last_non_9_digits_length = 5;
+						current_digits_length = 5;
 					}
 					else if (rp.current_segment() >= 1'0000) {
 						first_digit = char(rp.current_segment() / 1'0000);
-						last_non_9_digits = rp.current_segment() % 1'0000;
+						current_digits = rp.current_segment() % 1'0000;
 						normalizer = 10'0000;
-						last_non_9_digits_length = 4;
+						current_digits_length = 4;
 					}
 					else if (rp.current_segment() >= 1000) {
 						first_digit = char(rp.current_segment() / 1000);
-						last_non_9_digits = rp.current_segment() % 1000;
+						current_digits = rp.current_segment() % 1000;
 						normalizer = 100'0000;
-						last_non_9_digits_length = 3;
+						current_digits_length = 3;
 					}
 					else if (rp.current_segment() >= 100) {
 						first_digit = char(rp.current_segment() / 100);
-						last_non_9_digits = rp.current_segment() % 100;
+						current_digits = rp.current_segment() % 100;
 						normalizer = 1000'0000;
-						last_non_9_digits_length = 2;
+						current_digits_length = 2;
 					}
 					else if (rp.current_segment() >= 10) {
 						first_digit = char(rp.current_segment() / 10);
-						last_non_9_digits = rp.current_segment() % 10;
+						current_digits = rp.current_segment() % 10;
 						normalizer = 1'0000'0000;
-						last_non_9_digits_length = 1;
+						current_digits_length = 1;
 					}
 					else {
 						first_digit = char(rp.current_segment());
-						last_non_9_digits = rp.compute_next_segment();
+						current_digits = rp.compute_next_segment();
 						normalizer = 1;
-						last_non_9_digits_length = 9;
+						current_digits_length = 9;
 					}
-					exponent = last_non_9_digits_length - rp.current_segment_index() * 9;
+					exponent = current_digits_length - rp.current_segment_index() * 9;
 
-					// Count trailing 9's.
-					int number_of_trailing_9 = 0;
-					while (last_non_9_digits % 10 == 9) {
-						last_non_9_digits /= 10;
-						++number_of_trailing_9;
-						normalizer *= 10;
-					}
-
-					// Print the first digit if it cannot be altered by rounding.
-					if (number_of_trailing_9 < last_non_9_digits_length) {
-						buffer[0] = char('0' + first_digit);
-						buffer[1] = '.';
-						buffer += 2;
-						first_digit_printed = true;
-					}
-					else {
-						first_digit_printed = false;
-					}
-					last_non_9_digits_length -= number_of_trailing_9;
-
-					while (precision > last_non_9_digits_length + number_of_trailing_9) {
-						auto next_segment = rp.compute_next_segment();
-
-						if (next_segment == 9'9999'9999) {
-							number_of_trailing_9 += 9;
-						}
-						else {
-							// Previous digits can be now safely printed.
-							precision -= (last_non_9_digits_length + number_of_trailing_9);
-
-							// The first digit
-							if (!first_digit_printed) {
-								buffer[0] = char('0' + first_digit);
-								buffer[1] = '.';
-								buffer += 2;
-								first_digit_printed = true;
-							}
-
-							// Non-9 digits
-							print_number(last_non_9_digits, last_non_9_digits_length);
-
-							// Trailing 9's
-							while (number_of_trailing_9 >= 8) {
-								std::memcpy(buffer, "99999999", 8);
-								buffer += 8;
-								number_of_trailing_9 -= 8;
-							}
-							if (number_of_trailing_9 >= 4) {
-								std::memcpy(buffer, "9999", 4);
-								buffer += 4;
-								number_of_trailing_9 -= 4;
-							}
-							if (number_of_trailing_9 >= 2) {
-								std::memcpy(buffer, "99", 4);
-								buffer += 2;
-								number_of_trailing_9 -= 2;
-							}
-							if (number_of_trailing_9 != 0) {
-								*buffer = '9';
-								++buffer;
-							}
-
-							// Reset variables.
-							last_non_9_digits = next_segment;
-							number_of_trailing_9 = 0;
-							normalizer = 1;
-							while (last_non_9_digits % 10 == 9) {
-								last_non_9_digits /= 10;
-								++number_of_trailing_9;
-								normalizer *= 10;
-							}
-							last_non_9_digits_length = 9 - number_of_trailing_9;
-						}
-					}
-
-					if (precision == last_non_9_digits_length + number_of_trailing_9) {
-						auto remainder = rp.compute_next_segment();
-
-						if (number_of_trailing_9 != 0) {
-							// Determine rounding.
-							if (remainder >= 5'0000'0000) {
-								// Perform round-up.
-
-								// If digits are all 9's,
-								if (last_non_9_digits_length == 0) {
-									if (!first_digit_printed) {
-										if (++first_digit == 10) {
-											std::memcpy(buffer, "1.", 2);
-											++exponent;
-										}
-										else {
-											buffer[0] = char('0' + first_digit);
-											buffer[1] = '.';
-										}
-										buffer += 2;
-									}
-								}
-								// Otherwise,
-								else {
-									++last_non_9_digits;
-									assert(last_non_9_digits < std::pow(10, last_non_9_digits_length));
-									assert(first_digit_printed);
-									print_number(last_non_9_digits, last_non_9_digits_length);
-								}
-								print_zeros(number_of_trailing_9);
-							}
-							else {
-								// Non-9 digits
-								print_number(last_non_9_digits, last_non_9_digits_length);
-
-								// Trailing 9's
-								while (number_of_trailing_9 >= 8) {
-									std::memcpy(buffer, "99999999", 8);
-									buffer += 8;
-									number_of_trailing_9 -= 8;
-								}
-								if (number_of_trailing_9 >= 4) {
-									std::memcpy(buffer, "9999", 4);
-									buffer += 4;
-									number_of_trailing_9 -= 4;
-								}
-								if (number_of_trailing_9 >= 2) {
-									std::memcpy(buffer, "99", 4);
-									buffer += 2;
-									number_of_trailing_9 -= 2;
-								}
-								if (number_of_trailing_9 != 0) {
-									*buffer = '9';
-									++buffer;
-								}
-							}
-						}
-						else {
-							assert(first_digit_printed);
-
-							// Determine rounding.
-							if (remainder > 5'0000'0000 ||
-								(remainder == 5'0000'0000 &&
-									(last_non_9_digits % 2 != 0 || rp.has_further_nonzero_segments())))
-							{
-								++last_non_9_digits;
-							}
-							print_number(last_non_9_digits, last_non_9_digits_length);
-						}
-					}
-					else if (precision >= last_non_9_digits_length) {
-						// The next digit after the last digit is 9;
-						// thus, perform round-up.
-
-						// This condition means every digit after the first digit were 9.
-						if (!first_digit_printed) {
-							assert(last_non_9_digits_length == 0);
-							if (++first_digit == 10) {
-								std::memcpy(buffer, "1.", 2);
-								++exponent;
-							}
-							else {
-								buffer[0] = char('0' + first_digit);
-								buffer[1] = '.';
-							}
-							buffer += 2;
-						}
-						// Otherwise, print non-9 digits.
-						else {
-							++last_non_9_digits;
-							assert(last_non_9_digits * normalizer <= 9'9999'9999);
-							precision -= last_non_9_digits_length;
-							print_number(last_non_9_digits, last_non_9_digits_length);
-						}
-
-						// Print trailing 0's.
-						print_zeros(precision);
-					}
-					else {
-						assert(precision < last_non_9_digits_length);
-						last_non_9_digits *= normalizer;
-						assert(last_non_9_digits <= 9'9999'9999);
-
+					// If all the required digits were generated
+					if (precision <= current_digits_length) {
 						std::uint32_t remainder;
-						switch (precision) {
-						case 1:
-							remainder = (last_non_9_digits % 1'0000'0000) * 10;
-							last_non_9_digits /= 1'0000'0000;
-							break;
 
-						case 2:
-							remainder = (last_non_9_digits % 1000'0000) * 100;
-							last_non_9_digits /= 1000'0000;
-							break;
+						if (precision < current_digits_length) {
+							current_digits *= normalizer;
 
-						case 3:
-							remainder = (last_non_9_digits % 100'0000) * 1000;
-							last_non_9_digits /= 100'0000;
-							break;
+							auto case_handler = [&](auto const_holder) {
+								constexpr auto e = decltype(const_holder)::value;
+								constexpr auto divisor =
+									detail::compute_power<9 - e>(std::uint32_t(10));
+								constexpr auto remainder_normalizer =
+									detail::compute_power<e>(std::uint32_t(10));
 
-						case 4:
-							remainder = (last_non_9_digits % 10'0000) * 1'0000;
-							last_non_9_digits /= 10'0000;
-							break;
+								remainder = (current_digits % divisor) * remainder_normalizer;
+								current_digits /= divisor;
+								normalizer = divisor;
+							};
 
-						case 5:
-							remainder = (last_non_9_digits % 1'0000) * 10'0000;
-							last_non_9_digits /= 1'0000;
-							break;
+							switch (precision) {
+							case 1:
+								case_handler(std::integral_constant<int, 1>{});
+								break;
 
-						case 6:
-							remainder = (last_non_9_digits % 1000) * 100'0000;
-							last_non_9_digits /= 1000;
-							break;
+							case 2:
+								case_handler(std::integral_constant<int, 2>{});
+								break;
 
-						case 7:
-							remainder = (last_non_9_digits % 100) * 1000'0000;
-							last_non_9_digits /= 100;
-							break;
+							case 3:
+								case_handler(std::integral_constant<int, 3>{});
+								break;
 
-						default:
-							assert(precision == 8);
-							remainder = (last_non_9_digits % 10) * 1'0000'0000;
-							last_non_9_digits /= 10;
+							case 4:
+								case_handler(std::integral_constant<int, 4>{});
+								break;
+
+							case 5:
+								case_handler(std::integral_constant<int, 5>{});
+								break;
+
+							case 6:
+								case_handler(std::integral_constant<int, 6>{});
+								break;
+
+							case 7:
+								case_handler(std::integral_constant<int, 7>{});
+								break;
+
+							default:
+								assert(precision == 8);
+								case_handler(std::integral_constant<int, 8>{});
+							}
+						} // precision < current_digits_length
+						else {
+							remainder = rp.compute_next_segment();
 						}
-						last_non_9_digits_length = precision;
 
 						// Determine rounding.
 						if (remainder > 5'0000'0000 ||
 							(remainder == 5'0000'0000 &&
-								(last_non_9_digits % 2 != 0 || rp.has_further_nonzero_segments())))
+								(current_digits % 2 != 0 || rp.has_further_nonzero_segments())))
 						{
-							++last_non_9_digits;
-							assert(last_non_9_digits < std::pow(10, last_non_9_digits_length));
+							if (normalizer * ++current_digits == 10'0000'0000) {
+								if (++first_digit == 10) {
+									++exponent;
+									*buffer = '1';
+									++buffer;
+								}
+								else {
+									*buffer = char('0' + first_digit);
+									++buffer;
+								}
+								*buffer = '.';
+								++buffer;
+
+								std::memset(buffer, '0', precision);
+								buffer += precision;
+								goto print_exponent_and_return_label;
+							}
 						}
 
-						assert(first_digit_printed);
-						print_number(last_non_9_digits, last_non_9_digits_length);
-					}
-				}
+						*buffer = char('0' + first_digit);
+						++buffer;
+						*buffer = '.';
+						++buffer;
+
+						buffer = detail::print_number(buffer, current_digits, current_digits_length);
+					} // precision <= current_digits_length
+					// If there are more digits to be generated
+					else {
+						int number_of_trailing_9;
+						precision -= current_digits_length;
+						auto next_digits = rp.compute_next_segment();
+
+						// If the current digits are all 9's
+						if ((current_digits + 1) * normalizer == 10'0000'0000) {
+							number_of_trailing_9 = current_digits_length;
+
+							// Scan until a digit other than 9 is found
+							while (true) {
+								assert(precision > 0);
+
+								if (precision <= 9) {
+									std::uint32_t remainder;
+
+									auto case_handler = [&](auto const_holder) {
+										constexpr auto e = decltype(const_holder)::value;
+										constexpr auto divisor =
+											detail::compute_power<9 - e>(std::uint32_t(10));
+										constexpr auto remainder_normalizer =
+											detail::compute_power<e>(std::uint32_t(10));
+
+										remainder = (next_digits % divisor) * remainder_normalizer;
+										next_digits /= divisor;
+										normalizer = divisor;
+									};
+
+									switch (precision) {
+									case 1:
+										case_handler(std::integral_constant<int, 1>{});
+										break;
+
+									case 2:
+										case_handler(std::integral_constant<int, 2>{});
+										break;
+
+									case 3:
+										case_handler(std::integral_constant<int, 3>{});
+										break;
+
+									case 4:
+										case_handler(std::integral_constant<int, 4>{});
+										break;
+
+									case 5:
+										case_handler(std::integral_constant<int, 5>{});
+										break;
+
+									case 6:
+										case_handler(std::integral_constant<int, 6>{});
+										break;
+
+									case 7:
+										case_handler(std::integral_constant<int, 7>{});
+										break;
+
+									case 8:
+										case_handler(std::integral_constant<int, 8>{});
+										break;
+
+									default:
+										assert(precision == 9);
+										remainder = rp.compute_next_segment();
+										normalizer = 1;
+									}
+
+									// Determine rounding
+									if (remainder > 5'0000'0000 ||
+										(remainder == 5'0000'0000 &&
+											(next_digits % 2 != 0 || rp.has_further_nonzero_segments())))
+									{
+										if (normalizer * ++next_digits == 10'0000'0000) {
+											if (++first_digit == 10) {
+												++exponent;
+												*buffer = '1';
+												++buffer;
+											}
+											else {
+												*buffer = char('0' + first_digit);
+												++buffer;
+											}
+											*buffer = '.';
+											++buffer;
+
+											std::memset(buffer, '0', number_of_trailing_9 + precision);
+											buffer += (number_of_trailing_9 + precision);
+											goto print_exponent_and_return_label;
+										}
+									}
+
+									// Print digits
+									*buffer = char('0' + first_digit);
+									++buffer;
+									*buffer = '.';
+									++buffer;
+									std::memset(buffer, '9', number_of_trailing_9);
+									buffer += number_of_trailing_9;
+									buffer = detail::print_number(buffer, next_digits, precision);
+									goto print_exponent_and_return_label;
+								}
+
+								if (next_digits == 9'9999'9999) {
+									number_of_trailing_9 += 9;
+									precision -= 9;
+									next_digits = rp.compute_next_segment();
+								}
+								else {
+									break;
+								}
+							} // Scan until a digit other than 9 is found
+
+							// Digits until next_digits can be safely printed
+							*buffer = char('0' + first_digit);
+							++buffer;
+							*buffer = '.';
+							++buffer;
+							std::memset(buffer, '9', number_of_trailing_9);
+							buffer += number_of_trailing_9;
+						} // (current_digits + 1) * normalizer == 10'0000'0000
+						// If the current digits are not all 9's
+						else {
+							// Print the first digit and the decimal dot
+							*buffer = char('0' + first_digit);
+							++buffer;
+							*buffer = '.';
+							++buffer;
+
+							number_of_trailing_9 = 0;
+
+							// Scan until a digit other than '9' is found
+							while (true) {
+								assert(precision > 0);
+
+								if (precision <= 9) {
+									std::uint32_t remainder;
+
+									auto case_handler = [&](auto const_holder) {
+										constexpr auto e = decltype(const_holder)::value;
+										constexpr auto divisor =
+											detail::compute_power<9 - e>(std::uint32_t(10));
+										constexpr auto remainder_normalizer =
+											detail::compute_power<e>(std::uint32_t(10));
+
+										remainder = (next_digits % divisor) * remainder_normalizer;
+										next_digits /= divisor;
+										normalizer = divisor;
+									};
+
+									switch (precision) {
+									case 1:
+										case_handler(std::integral_constant<int, 1>{});
+										break;
+
+									case 2:
+										case_handler(std::integral_constant<int, 2>{});
+										break;
+
+									case 3:
+										case_handler(std::integral_constant<int, 3>{});
+										break;
+
+									case 4:
+										case_handler(std::integral_constant<int, 4>{});
+										break;
+
+									case 5:
+										case_handler(std::integral_constant<int, 5>{});
+										break;
+
+									case 6:
+										case_handler(std::integral_constant<int, 6>{});
+										break;
+
+									case 7:
+										case_handler(std::integral_constant<int, 7>{});
+										break;
+
+									case 8:
+										case_handler(std::integral_constant<int, 8>{});
+										break;
+
+									default:
+										assert(precision == 9);
+										remainder = rp.compute_next_segment();
+										normalizer = 1;
+									}
+
+									// Determine rounding
+									if (remainder > 5'0000'0000 ||
+										(remainder == 5'0000'0000 &&
+											(next_digits % 2 != 0 || rp.has_further_nonzero_segments())))
+									{
+										if (normalizer * ++next_digits == 10'0000'0000) {
+											++current_digits;
+											buffer = detail::print_number(buffer, current_digits,
+												current_digits_length);
+											std::memset(buffer, '0', number_of_trailing_9 + precision);
+											buffer += number_of_trailing_9 + precision;
+											goto print_exponent_and_return_label;
+										}
+									}
+
+									// Print digits
+									buffer = detail::print_number(buffer,
+										current_digits, current_digits_length);
+									std::memset(buffer, '9', number_of_trailing_9);
+									buffer += number_of_trailing_9;
+									buffer = detail::print_number(buffer, next_digits, precision);
+									goto print_exponent_and_return_label;
+								}
+
+								if (next_digits == 9'9999'9999) {
+									number_of_trailing_9 += 9;
+									precision -= 9;
+									next_digits = rp.compute_next_segment();
+								}
+								else {
+									break;
+								}
+							}
+
+							// Digits until next_digits can be safely printed
+							buffer = detail::print_number(buffer, current_digits,
+								current_digits_length);
+							std::memset(buffer, '9', number_of_trailing_9);
+							buffer += number_of_trailing_9;
+						} // (current_digits + 1) * normalizer != 10'0000'0000
+
+						assert(precision > 9);
+						number_of_trailing_9 = 0;
+						current_digits = next_digits;
+						next_digits = rp.compute_next_segment();
+						precision -= 9;
+
+						while (precision > 9) {
+							if (next_digits == 9'9999'9999) {
+								number_of_trailing_9 += 9;
+							}
+							else {
+								buffer = detail::print_nine_digits(buffer, current_digits);
+								std::memset(buffer, '9', number_of_trailing_9);
+								buffer += number_of_trailing_9;
+								number_of_trailing_9 = 0;
+								current_digits = next_digits;
+							}
+							precision -= 9;
+							next_digits = rp.compute_next_segment();
+						}
+
+						// Print the last segment
+						std::uint32_t remainder;
+
+						auto case_handler = [&](auto const_holder) {
+							constexpr auto e = decltype(const_holder)::value;
+							constexpr auto divisor =
+								detail::compute_power<9 - e>(std::uint32_t(10));
+							constexpr auto remainder_normalizer =
+								detail::compute_power<e>(std::uint32_t(10));
+
+							remainder = (next_digits % divisor) * remainder_normalizer;
+							next_digits /= divisor;
+							normalizer = divisor;
+						};
+
+						switch (precision) {
+						case 1:
+							case_handler(std::integral_constant<int, 1>{});
+							break;
+
+						case 2:
+							case_handler(std::integral_constant<int, 2>{});
+							break;
+
+						case 3:
+							case_handler(std::integral_constant<int, 3>{});
+							break;
+
+						case 4:
+							case_handler(std::integral_constant<int, 4>{});
+							break;
+
+						case 5:
+							case_handler(std::integral_constant<int, 5>{});
+							break;
+
+						case 6:
+							case_handler(std::integral_constant<int, 6>{});
+							break;
+
+						case 7:
+							case_handler(std::integral_constant<int, 7>{});
+							break;
+
+						case 8:
+							case_handler(std::integral_constant<int, 8>{});
+							break;
+
+						default:
+							assert(precision == 9);
+							remainder = rp.compute_next_segment();
+							normalizer = 1;
+						}
+
+						// Determine rounding
+						if (remainder > 5'0000'0000 ||
+							(remainder == 5'0000'0000 &&
+								(next_digits % 2 != 0 || rp.has_further_nonzero_segments())))
+						{
+							if (normalizer * ++next_digits == 10'0000'0000) {
+								++current_digits;
+								assert(current_digits < 10'0000'0000);
+								buffer = detail::print_nine_digits(buffer, current_digits);
+								std::memset(buffer, '0', number_of_trailing_9 + precision);
+								buffer += (number_of_trailing_9 + precision);
+								goto print_exponent_and_return_label;
+							}
+						}
+
+						// Print digits
+						buffer = detail::print_nine_digits(buffer, current_digits);
+						std::memset(buffer, '9', number_of_trailing_9);
+						buffer += number_of_trailing_9;
+						buffer = detail::print_number(buffer, next_digits, precision);
+					} // precision > current_digits_length
+				} // precision != 0
 
 				// Print the exponent and return.
 			print_exponent_and_return_label:
@@ -520,8 +696,8 @@ namespace jkj::fp {
 				else {
 					std::memcpy(buffer, "0.", 1);
 					buffer += 2;
-					print_zeros(precision);
-					return buffer;
+					std::memset(buffer, '0', precision);
+					return buffer + precision;
 				}
 			}
 		}
@@ -543,4 +719,5 @@ namespace jkj::fp {
 	}
 }
 
+#include "../detail/undef_macros.h"
 #endif

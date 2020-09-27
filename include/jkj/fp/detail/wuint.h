@@ -148,7 +148,7 @@ namespace jkj::fp {
 			};
 
 			// Computes 128-bit result of multiplication of two 64-bit unsigned integers.
-			inline uint128 umul128(std::uint64_t x, std::uint64_t y) noexcept {
+			JKJ_SAFEBUFFERS inline uint128 umul128(std::uint64_t x, std::uint64_t y) noexcept {
 #if (defined(__GNUC__) || defined(__clang__)) && defined(__SIZEOF_INT128__) && defined(__x86_64__)
 				return (unsigned __int128)(x) * (unsigned __int128)(y);
 #elif defined(_MSC_VER) && defined(_M_X64)
@@ -204,7 +204,7 @@ namespace jkj::fp {
 
 			// Computes upper 128 bits of multiplication of a 64-bit unsigned integer.
 			// and a 192-bit unsigned integer
-			inline uint128 umul256_upper128(std::uint64_t x, uint192 y) noexcept {
+			JKJ_SAFEBUFFERS inline uint128 umul256_upper128(std::uint64_t x, uint192 y) noexcept {
 				auto g0 = umul128(x, y.high());
 				auto g1 = umul128(x, y.middle());
 				g1 += umul128_upper64(x, y.low());
@@ -214,7 +214,7 @@ namespace jkj::fp {
 
 			// Computes upper 64 bits of multiplication of a 32-bit unsigned integer
 			// and a 96-bit unsigned integer.
-			inline std::uint64_t umul128_upper64(std::uint32_t x, uint96 y) noexcept {
+			JKJ_SAFEBUFFERS inline std::uint64_t umul128_upper64(std::uint32_t x, uint96 y) noexcept {
 				auto g0 = std::uint64_t(x) * std::uint64_t(y.high());
 				auto g1 = umul128_upper64(std::uint64_t(x),
 					(std::uint64_t(y.middle()) << 32) | y.low());
@@ -223,7 +223,7 @@ namespace jkj::fp {
 
 			// Computes the second 64-bit block of
 			// 256-bit multiplication of two 128-bit unsigned integers.
-			inline std::uint64_t umul256_upper_middle64(uint128 x, uint128 y) noexcept {
+			JKJ_SAFEBUFFERS inline std::uint64_t umul256_upper_middle64(uint128 x, uint128 y) noexcept {
 				auto g11 = umul128_upper64(x.low(), y.low());
 				auto g12 = umul128(x.low(), y.high());
 				auto g21 = umul128(x.high(), y.low());

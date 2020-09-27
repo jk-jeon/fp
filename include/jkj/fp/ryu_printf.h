@@ -23,6 +23,7 @@
 #include "detail/log.h"
 #include "detail/ryu_printf_cache.h"
 #include "detail/util.h"
+#include "detail/macros.h"
 #include <cassert>
 #include <cstdint>
 
@@ -101,7 +102,7 @@ namespace jkj::fp {
 		// Computes the first segmnet on construction.
 		ryu_printf(Float x) noexcept : ryu_printf(ieee754_bits{ x }) {}
 
-		ryu_printf(ieee754_bits<Float> br) noexcept {
+		JKJ_FORCEINLINE ryu_printf(ieee754_bits<Float> br) noexcept {
 			using namespace detail;
 
 			significand_ = br.extract_significand_bits();
@@ -211,7 +212,7 @@ namespace jkj::fp {
 			}
 		}
 
-		std::uint32_t compute_next_segment() noexcept {
+		JKJ_FORCEINLINE std::uint32_t compute_next_segment() noexcept {
 			if (pow2_exponent_ < pow2_exponent_upper_bound_) {
 				increase_segment_index();
 			}
@@ -223,14 +224,14 @@ namespace jkj::fp {
 		}
 
 	private:
-		std::uint32_t compute_segment() const noexcept {
+		JKJ_FORCEINLINE std::uint32_t compute_segment() const noexcept {
 			auto index_info = cache_holder::get_index_info(segment_index_);
 			auto cache = cache_holder::cache[index_info.starting_index + (exponent_index_ - index_info.min_k)];
 			return multiply_shift_mod(significand_, cache,
 				segment_bit_size + remainder_ - carrier_bits + significand_bits + 1);
 		}
 
-		void increase_segment_index() noexcept {
+		JKJ_FORCEINLINE void increase_segment_index() noexcept {
 			++segment_index_;
 			assert(pow2_exponent_ < pow2_exponent_upper_bound_);
 			pow2_exponent_ += segment_size;
@@ -244,7 +245,7 @@ namespace jkj::fp {
 			segment_ = compute_segment();
 		}
 
-		static std::uint32_t multiply_shift_mod(carrier_uint x,
+		JKJ_SAFEBUFFERS static std::uint32_t multiply_shift_mod(carrier_uint x,
 			cache_entry_type const& y, int shift_amount) noexcept
 		{
 			using namespace detail;
@@ -283,4 +284,5 @@ namespace jkj::fp {
 	};
 }
 
+#include "detail/undef_macros.h"
 #endif
