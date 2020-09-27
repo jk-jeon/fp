@@ -25,6 +25,12 @@
     <Filter Include="test\ryu_printf">
       <UniqueIdentifier>{9d868dfc-7937-4cf5-b6a9-e9598352336c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="benchmark">
+      <UniqueIdentifier>{516f2609-210a-41d1-adf4-62813b271966}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="benchmark\ryu">
+      <UniqueIdentifier>{1e81f684-37dd-4b51-9c90-70df7fbcb5a3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\jkj\fp\detail\bits.h">
@@ -72,6 +78,33 @@
     <ClInclude Include="..\test\minmax_euclid.h">
       <Filter>test</Filter>
     </ClInclude>
+    <ClInclude Include="..\benchmark\ryu\common.h">
+      <Filter>benchmark\ryu</Filter>
+    </ClInclude>
+    <ClInclude Include="..\benchmark\ryu\d2fixed_full_table.h">
+      <Filter>benchmark\ryu</Filter>
+    </ClInclude>
+    <ClInclude Include="..\benchmark\ryu\d2s_full_table.h">
+      <Filter>benchmark\ryu</Filter>
+    </ClInclude>
+    <ClInclude Include="..\benchmark\ryu\d2s_intrinsics.h">
+      <Filter>benchmark\ryu</Filter>
+    </ClInclude>
+    <ClInclude Include="..\benchmark\ryu\d2s_small_table.h">
+      <Filter>benchmark\ryu</Filter>
+    </ClInclude>
+    <ClInclude Include="..\benchmark\ryu\digit_table.h">
+      <Filter>benchmark\ryu</Filter>
+    </ClInclude>
+    <ClInclude Include="..\benchmark\ryu\f2s_full_table.h">
+      <Filter>benchmark\ryu</Filter>
+    </ClInclude>
+    <ClInclude Include="..\benchmark\ryu\f2s_intrinsics.h">
+      <Filter>benchmark\ryu</Filter>
+    </ClInclude>
+    <ClInclude Include="..\benchmark\ryu\ryu.h">
+      <Filter>benchmark\ryu</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\test\ryu_printf\generate_cache.cpp">
@@ -82,6 +115,15 @@
     </ClCompile>
     <ClCompile Include="..\test\verify_log_computation.cpp">
       <Filter>test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\benchmark\ryu\d2fixed.c">
+      <Filter>benchmark\ryu</Filter>
+    </ClCompile>
+    <ClCompile Include="..\benchmark\ryu\d2s.c">
+      <Filter>benchmark\ryu</Filter>
+    </ClCompile>
+    <ClCompile Include="..\benchmark\ryu\f2s.c">
+      <Filter>benchmark\ryu</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

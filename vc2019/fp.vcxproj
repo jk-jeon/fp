@@ -233,6 +233,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\benchmark\ryu\common.h" />
+    <ClInclude Include="..\benchmark\ryu\d2fixed_full_table.h" />
+    <ClInclude Include="..\benchmark\ryu\d2s_full_table.h" />
+    <ClInclude Include="..\benchmark\ryu\d2s_intrinsics.h" />
+    <ClInclude Include="..\benchmark\ryu\d2s_small_table.h" />
+    <ClInclude Include="..\benchmark\ryu\digit_table.h" />
+    <ClInclude Include="..\benchmark\ryu\f2s_full_table.h" />
+    <ClInclude Include="..\benchmark\ryu\f2s_intrinsics.h" />
+    <ClInclude Include="..\benchmark\ryu\ryu.h" />
     <ClInclude Include="..\include\jkj\fp\detail\bits.h" />
     <ClInclude Include="..\include\jkj\fp\detail\div.h" />
     <ClInclude Include="..\include\jkj\fp\detail\log.h" />
@@ -250,6 +259,9 @@
     <ClInclude Include="..\test\ryu_printf\cache_write_helper.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\benchmark\ryu\d2fixed.c" />
+    <ClCompile Include="..\benchmark\ryu\d2s.c" />
+    <ClCompile Include="..\benchmark\ryu\f2s.c" />
     <ClCompile Include="..\test\main.cpp" />
     <ClCompile Include="..\test\ryu_printf\generate_cache.cpp" />
     <ClCompile Include="..\test\verify_log_computation.cpp" />
