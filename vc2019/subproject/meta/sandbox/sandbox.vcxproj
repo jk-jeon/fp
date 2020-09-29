@@ -183,7 +183,6 @@
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <OmitFramePointers>
       </OmitFramePointers>
-      <AdditionalOptions>/experimental:newLambdaProcessor %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -246,7 +245,6 @@
       <AdditionalIncludeDirectories>$(SolutionDir)..\include\;$(SolutionDir)..\subproject\common\3rdparty\;$(SolutionDir)..\subproject\common\include\</AdditionalIncludeDirectories>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <AdditionalOptions>/experimental:newLambdaProcessor %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

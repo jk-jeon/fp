@@ -648,11 +648,11 @@ namespace jkj::fp {
 			print_exponent_and_return_label:
 				if (exponent < 0) {
 					exponent = -exponent;
-					std::memcpy(buffer, "E-", 2);
+					std::memcpy(buffer, "e-", 2);
 					buffer += 2;
 				}
 				else {
-					*buffer = 'E';
+					*buffer = 'e';
 					++buffer;
 				}
 				if constexpr (ieee754_format_info::format == ieee754_format::binary64) {
