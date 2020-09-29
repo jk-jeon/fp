@@ -119,13 +119,13 @@ namespace jkj::fp {
 				if (exponent_ <= -significand_bits - 1) {
 					assert(dividend >= 0);
 					segment_index_ = int(unsigned(dividend) / unsigned(segment_size) + 1);
-					max_segment_index_ = int(unsigned(-exponent_) / unsigned(segment_size));
+					max_segment_index_ = int(unsigned(-exponent_ + segment_size - 1) / unsigned(segment_size));
 				}
 				else {
 					assert(dividend < 0);
 					segment_index_ = -int(unsigned(-dividend) / unsigned(segment_size));
 					if (exponent_ < 0) {
-						max_segment_index_ = int(unsigned(-exponent_) / unsigned(segment_size));
+						max_segment_index_ = int(unsigned(-exponent_ + segment_size - 1) / unsigned(segment_size));
 					}
 					else {
 						max_segment_index_ = 0;
@@ -141,7 +141,7 @@ namespace jkj::fp {
 				constexpr auto dividend = log::floor_log10_pow2(-min_exponent - 1);
 				static_assert(dividend >= 0);
 				segment_index_ = int(unsigned(dividend) / unsigned(segment_size) + 1);
-				max_segment_index_ = int(unsigned(-exponent_) / unsigned(segment_size));
+				max_segment_index_ = int(unsigned(-exponent_ + segment_size - 1) / unsigned(segment_size));
 			}
 
 			// Align the implicit bit to the MSB.
@@ -168,7 +168,8 @@ namespace jkj::fp {
 			// Get first nonzero segment.
 			segment_ = compute_segment();
 			while (segment_ == 0) {
-				increase_segment_index();
+				++segment_index_;
+				on_increase_segment_index();
 			}
 		}
 
@@ -215,11 +216,11 @@ namespace jkj::fp {
 		}
 
 		JKJ_FORCEINLINE std::uint32_t compute_next_segment() noexcept {
-			if (segment_index_ < max_segment_index_) {
-				increase_segment_index();
+			++segment_index_;
+			if (segment_index_ <= max_segment_index_) {
+				on_increase_segment_index();
 			}
 			else {
-				++segment_index_;
 				segment_ = 0;
 			}
 			return segment_;
@@ -233,10 +234,8 @@ namespace jkj::fp {
 				segment_bit_size + remainder_ - carrier_bits + significand_bits + 1);
 		}
 
-		JKJ_FORCEINLINE void increase_segment_index() noexcept {
-			assert(segment_index_ < max_segment_index_);
-			++segment_index_;
-
+		JKJ_FORCEINLINE void on_increase_segment_index() noexcept {
+			assert(segment_index_ <= max_segment_index_);
 			remainder_ += segment_size;
 			static_assert(segment_size < compression_factor);
 			if (remainder_ >= compression_factor) {
