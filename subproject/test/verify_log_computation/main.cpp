@@ -15,8 +15,8 @@
 // is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
 // KIND, either express or implied.
 
+#include "jkj/fp/detail/log.h"
 #include "bigint.h"
-#include "../include/jkj/fp/detail/log.h"
 
 #include <functional>
 #include <iostream>
@@ -276,7 +276,7 @@ namespace {
 		std::uint64_t s_fractional_digits,
 		std::size_t shift_amount
 	>
-	void verify(std::string_view name,
+	int verify(std::string_view name,
 		std::function<int(int)> precise_calculator = nullptr)
 	{
 		// Compute the constants
@@ -308,7 +308,7 @@ namespace {
 		// To extract the lower bits
 		constexpr auto lower_bits_mask = std::uint32_t((std::uint32_t(1) << shift_amount) - 1);
 
-		std::int32_t max_exponent = std::int32_t(max_exponent_upper_bound);
+		int max_exponent = int(max_exponent_upper_bound);
 		for (std::uint32_t e = 0; e <= max_exponent_upper_bound; ++e) {
 			// Detect overflow
 			auto frac_part = std::uint32_t(((frac_bits * e) >> ceil_log2_max_exponent_upper_bound) + 1);
@@ -341,7 +341,7 @@ namespace {
 					}
 
 					if (actual_error) {
-						max_exponent = std::int32_t(e) - 1;
+						max_exponent = int(e) - 1;
 						break;
 					}
 					else {
@@ -349,69 +349,78 @@ namespace {
 					}
 				}
 				else {
-					max_exponent = std::int32_t(e) - 1;
+					max_exponent = int(e) - 1;
 					break;
 				}
 			}
 		}
 
 		std::cout << name << " is correct up to |e| <= " << max_exponent << "\n\n";
+		return max_exponent;
 	}
 }
 
-namespace jkj::fp {
-	namespace detail {
-		void verify_log_computation()
-		{
-			using namespace log;
+int main()
+{
+	using namespace jkj::fp::detail::log;
 
-			std::cout << "[Verifying log computation...]\n";
+	bool success = true;
+	std::cout << "[Verifying log computation...]\n";
 
-			verify<
-				0, log10_2_fractional_digits,
-				0, 0,
-				floor_log10_pow2_shift_amount
-			>("floor_log10_pow2", floor_log10_pow2_precise);
+	success &= (verify<
+		0, log10_2_fractional_digits,
+		0, 0,
+		floor_log10_pow2_shift_amount
+	>("floor_log10_pow2", floor_log10_pow2_precise)
+		== floor_log10_pow2_input_limit);
 
-			verify<
-				0, log10_2_fractional_digits,
-				0, log10_4_over_3_fractional_digits,
-				floor_log10_pow2_shift_amount
-			>("floor_log10_pow2_minus_log10_4_over_3", floor_log10_pow2_minus_log10_4_over_3_precise);
+	success &= (verify<
+		0, log10_2_fractional_digits,
+		0, log10_4_over_3_fractional_digits,
+		floor_log10_pow2_shift_amount
+	>("floor_log10_pow2_minus_log10_4_over_3", floor_log10_pow2_minus_log10_4_over_3_precise)
+		== floor_log10_pow2_minus_log10_4_over_3_input_limit);
 
-			verify<
-				0, log10_5_fractional_digits,
-				0, 0,
-				floor_log10_pow5_shift_amount
-			>("floor_log10_pow5", floor_log10_pow5_precise);
+	success &= (verify<
+		0, log10_5_fractional_digits,
+		0, 0,
+		floor_log10_pow5_shift_amount
+	>("floor_log10_pow5", floor_log10_pow5_precise)
+		== floor_log10_pow5_input_limit);
 
-			verify<
-				2, log2_10_fractional_digits,
-				0, 0,
-				floor_log2_pow10_shift_amount
-			>("floor_log2_pow5", floor_log2_pow5_precise);
+	success &= (verify<
+		2, log2_10_fractional_digits,
+		0, 0,
+		floor_log2_pow10_shift_amount
+	>("floor_log2_pow5", floor_log2_pow5_precise)
+		== floor_log2_pow5_input_limit);
 
-			verify<
-				3, log2_10_fractional_digits,
-				0, 0,
-				floor_log2_pow10_shift_amount
-			>("floor_log2_pow10", floor_log2_pow10_precise);
+	success &= (verify<
+		3, log2_10_fractional_digits,
+		0, 0,
+		floor_log2_pow10_shift_amount
+	>("floor_log2_pow10", floor_log2_pow10_precise)
+		== floor_log2_pow10_input_limit);
 
-			verify<
-				0, log5_2_fractional_digits,
-				0, 0,
-				floor_log5_pow2_shift_amount
-			>("floor_log5_pow2", floor_log5_pow2_precise);
+	success &= (verify<
+		0, log5_2_fractional_digits,
+		0, 0,
+		floor_log5_pow2_shift_amount
+	>("floor_log5_pow2", floor_log5_pow2_precise)
+		== floor_log5_pow2_input_limit);
 
-			verify<
-				0, log5_2_fractional_digits,
-				0, log5_3_fractional_digits,
-				floor_log5_pow2_shift_amount
-			>("floor_log5_pow2_minus_log5_3", floor_log5_pow2_minus_log5_3_precise);
+	success &= (verify<
+		0, log5_2_fractional_digits,
+		0, log5_3_fractional_digits,
+		floor_log5_pow2_shift_amount
+	>("floor_log5_pow2_minus_log5_3", floor_log5_pow2_minus_log5_3_precise)
+		== floor_log5_pow2_minus_log5_3_input_limit);
 
 
-			std::cout << std::endl;
-			std::cout << "Done.\n\n\n";
-		}
+	std::cout << std::endl;
+	std::cout << "Done.\n\n\n";
+
+	if (!success) {
+		return -1;
 	}
 }

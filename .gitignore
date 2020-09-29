@@ -2,10 +2,13 @@
 # 이 .gitignore 파일은 Microsoft(R) Visual Studio에서 자동으로 만들어졌습니다.
 ################################################################################
 
-/vc2019/.vs/fp/v16
-/vc2019/x64/Debug
-/vc2019/Win32/Debug
-/vc2019/Win32/Release
-/vc2019/Win32/ReleaseClang
-/vc2019/x64/ReleaseClang
-/vc2019/x64/Release
+/vc2019/.vs
+/vc2019/x64
+/vc2019/Win32
+/vc2019/subproject/test/verify_log_computation/x64
+/vc2019/subproject/meta/sandbox/x64
+/vc2019/subproject/meta/ryu_printf/generate_cache/x64
+/vc2019/subproject/common/3rdparty/ryu/x64
+/vc2019/subproject/benchmark/ryu_printf/x64
+/vc2019/exe
+/vc2019/lib

@@ -15,8 +15,8 @@
 // is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
 // KIND, either express or implied.
 
-#ifndef JKJ_HEADER_FP_RYU_PRINTF_TABLE
-#define JKJ_HEADER_FP_RYU_PRINTF_TABLE
+#ifndef JKJ_HEADER_FP_RYU_PRINTF_CACHE
+#define JKJ_HEADER_FP_RYU_PRINTF_CACHE
 
 #include "../ieee754_format.h"
 #include "wuint.h"

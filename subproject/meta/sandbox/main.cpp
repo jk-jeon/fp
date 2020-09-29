@@ -14,12 +14,16 @@ namespace jkj::fp {
 #include <iomanip>
 #include <string_view>
 
+
+#include "ryu/ryu.h"
+
 int main()
 {
 	using namespace jkj::fp::detail;
 	//ryu_printf::generate_cache();
 	//verify_log_computation();
 
+#if 0
 	while (true) {
 		double x;
 		int precision;
@@ -45,4 +49,7 @@ int main()
 		std::cout << str << std::endl;
 		std::cout << std::scientific << std::setprecision(precision) << x << std::endl;
 	}
+#else
+	// Benchmark
+#endif
 }

@@ -15,9 +15,9 @@
 // is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
 // KIND, either express or implied.
 
-#include "../minmax_euclid.h"
-#include "../../include/jkj/fp/detail/log.h"
-#include "../../include/jkj/fp/ryu_printf.h"
+#include "jkj/fp/detail/log.h"
+#include "jkj/fp/ryu_printf.h"
+#include "minmax_euclid.h"
 #include <cassert>
 #include <iostream>
 #include <iomanip>

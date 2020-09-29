@@ -202,8 +202,22 @@ namespace jkj::fp {
 #endif
 			}
 
+			// Computes upper 64-bits of multiplication of a 64-bit unsigned integer
+			// and a 128-bit unsigned integer.
+			JKJ_SAFEBUFFERS inline std::uint64_t umul192_upper64(std::uint64_t x, uint128 y) noexcept {
+				auto g0 = umul128(x, y.high());
+				g0 += umul128_upper64(x, y.low());
+				return g0.high();
+			}
+
+			// Computes upper 32-bits of multiplication of a 32-bit unsigned integer
+			// and a 64-bit unsigned integer.
+			inline std::uint32_t umul96_upper32(std::uint32_t x, std::uint64_t y) noexcept {
+				return std::uint32_t(umul128_upper64(x, y));
+			}
+
 			// Computes upper 128 bits of multiplication of a 64-bit unsigned integer.
-			// and a 192-bit unsigned integer
+			// and a 192-bit unsigned integer.
 			JKJ_SAFEBUFFERS inline uint128 umul256_upper128(std::uint64_t x, uint192 y) noexcept {
 				auto g0 = umul128(x, y.high());
 				auto g1 = umul128(x, y.middle());
@@ -219,6 +233,20 @@ namespace jkj::fp {
 				auto g1 = umul128_upper64(std::uint64_t(x),
 					(std::uint64_t(y.middle()) << 32) | y.low());
 				return g0 + g1;
+			}
+
+			// Computes middle 64-bits of multiplication of a 64-bit unsigned integer
+			// and a 128-bit unsigned integer.
+			JKJ_SAFEBUFFERS inline std::uint64_t umul192_middle64(std::uint64_t x, uint128 y) noexcept {
+				auto g01 = x * y.high();
+				auto g10 = umul128_upper64(x, y.low());
+				return g01 + g10;
+			}
+
+			// Computes middle 32-bits of multiplication of a 32-bit unsigned integer
+			// and a 64-bit unsigned integer.
+			inline std::uint64_t umul96_lower64(std::uint32_t x, std::uint64_t y) noexcept {
+				return x * y;
 			}
 
 			// Computes the second 64-bit block of

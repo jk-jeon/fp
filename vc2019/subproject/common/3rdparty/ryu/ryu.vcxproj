@@ -26,11 +26,27 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\..\..\subproject\common\3rdparty\ryu\common.h" />
+    <ClInclude Include="..\..\..\..\..\subproject\common\3rdparty\ryu\d2fixed_full_table.h" />
+    <ClInclude Include="..\..\..\..\..\subproject\common\3rdparty\ryu\d2s_full_table.h" />
+    <ClInclude Include="..\..\..\..\..\subproject\common\3rdparty\ryu\d2s_intrinsics.h" />
+    <ClInclude Include="..\..\..\..\..\subproject\common\3rdparty\ryu\d2s_small_table.h" />
+    <ClInclude Include="..\..\..\..\..\subproject\common\3rdparty\ryu\digit_table.h" />
+    <ClInclude Include="..\..\..\..\..\subproject\common\3rdparty\ryu\f2s_full_table.h" />
+    <ClInclude Include="..\..\..\..\..\subproject\common\3rdparty\ryu\f2s_intrinsics.h" />
+    <ClInclude Include="..\..\..\..\..\subproject\common\3rdparty\ryu\ryu.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\..\..\subproject\common\3rdparty\ryu\d2fixed.c" />
+    <ClCompile Include="..\..\..\..\..\subproject\common\3rdparty\ryu\d2s.c" />
+    <ClCompile Include="..\..\..\..\..\subproject\common\3rdparty\ryu\f2s.c" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{81ed8655-faec-4c19-9c31-239f59c33eb0}</ProjectGuid>
-    <RootNamespace>fp</RootNamespace>
+    <ProjectGuid>{0490642b-ee8d-4fc9-9155-decd17edbd30}</ProjectGuid>
+    <RootNamespace>ryu</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -51,7 +67,7 @@
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>ClangCL</PlatformToolset>
-    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <WholeProgramOptimization>false</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
@@ -71,7 +87,7 @@
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>ClangCL</PlatformToolset>
-    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <WholeProgramOptimization>false</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
@@ -135,8 +151,7 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\include;$(ProjectDir)..\benchmark</AdditionalIncludeDirectories>
-      <AdditionalOptions>/experimental:newLambdaProcessor %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\subproject\common\3rdparty\</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -152,8 +167,10 @@
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\include;$(ProjectDir)..\benchmark</AdditionalIncludeDirectories>
-      <AdditionalOptions>/experimental:newLambdaProcessor %(AdditionalOptions)</AdditionalOptions>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <OmitFramePointers />
+      <AdditionalIncludeDirectories>$(SolutionDir)..\subproject\common\3rdparty\</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -173,7 +190,9 @@
       <LanguageStandard>stdcpp17</LanguageStandard>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\include;$(ProjectDir)..\benchmark</AdditionalIncludeDirectories>
+      <OmitFramePointers>
+      </OmitFramePointers>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\subproject\common\3rdparty\</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -189,8 +208,7 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\include;$(ProjectDir)..\benchmark</AdditionalIncludeDirectories>
-      <AdditionalOptions>/experimental:newLambdaProcessor %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\subproject\common\3rdparty\</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -205,11 +223,10 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\include;$(ProjectDir)..\benchmark</AdditionalIncludeDirectories>
-      <AdditionalOptions>/experimental:newLambdaProcessor %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\subproject\common\3rdparty\</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -226,10 +243,10 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\include;$(ProjectDir)..\benchmark</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\subproject\common\3rdparty\</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -238,25 +255,6 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClInclude Include="..\include\jkj\fp\decimal_fp.h" />
-    <ClInclude Include="..\include\jkj\fp\detail\bits.h" />
-    <ClInclude Include="..\include\jkj\fp\detail\div.h" />
-    <ClInclude Include="..\include\jkj\fp\detail\dragonbox_cache.h" />
-    <ClInclude Include="..\include\jkj\fp\detail\dragonbox_policy.h" />
-    <ClInclude Include="..\include\jkj\fp\detail\log.h" />
-    <ClInclude Include="..\include\jkj\fp\detail\macros.h" />
-    <ClInclude Include="..\include\jkj\fp\detail\policy_holder.h" />
-    <ClInclude Include="..\include\jkj\fp\detail\ryu_printf_cache.h" />
-    <ClInclude Include="..\include\jkj\fp\detail\undef_macros.h" />
-    <ClInclude Include="..\include\jkj\fp\detail\util.h" />
-    <ClInclude Include="..\include\jkj\fp\detail\wuint.h" />
-    <ClInclude Include="..\include\jkj\fp\dragonbox.h" />
-    <ClInclude Include="..\include\jkj\fp\ieee754_format.h" />
-    <ClInclude Include="..\include\jkj\fp\ryu_printf.h" />
-    <ClInclude Include="..\include\jkj\fp\to_chars\fixed_precision.h" />
-    <ClInclude Include="..\include\jkj\fp\to_chars\to_chars_common.h" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

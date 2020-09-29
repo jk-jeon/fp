@@ -19,18 +19,6 @@
     <Filter Include="include\jkj\fp\from_chars">
       <UniqueIdentifier>{7645c3fb-7634-4805-b1d5-a549528373fc}</UniqueIdentifier>
     </Filter>
-    <Filter Include="test">
-      <UniqueIdentifier>{70b9f437-72ca-4812-9282-a736c80d82cd}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="test\ryu_printf">
-      <UniqueIdentifier>{9d868dfc-7937-4cf5-b6a9-e9598352336c}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="benchmark">
-      <UniqueIdentifier>{516f2609-210a-41d1-adf4-62813b271966}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="benchmark\ryu">
-      <UniqueIdentifier>{1e81f684-37dd-4b51-9c90-70df7fbcb5a3}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\jkj\fp\detail\bits.h">
@@ -69,61 +57,20 @@
     <ClInclude Include="..\include\jkj\fp\to_chars\fixed_precision.h">
       <Filter>include\jkj\fp\to_chars</Filter>
     </ClInclude>
-    <ClInclude Include="..\test\ryu_printf\cache_write_helper.h">
-      <Filter>test\ryu_printf</Filter>
+    <ClInclude Include="..\include\jkj\fp\dragonbox.h">
+      <Filter>include\jkj\fp</Filter>
     </ClInclude>
-    <ClInclude Include="..\test\bigint.h">
-      <Filter>test</Filter>
+    <ClInclude Include="..\include\jkj\fp\decimal_fp.h">
+      <Filter>include\jkj\fp</Filter>
     </ClInclude>
-    <ClInclude Include="..\test\minmax_euclid.h">
-      <Filter>test</Filter>
+    <ClInclude Include="..\include\jkj\fp\detail\dragonbox_cache.h">
+      <Filter>include\jkj\fp\detail</Filter>
     </ClInclude>
-    <ClInclude Include="..\benchmark\ryu\common.h">
-      <Filter>benchmark\ryu</Filter>
+    <ClInclude Include="..\include\jkj\fp\detail\dragonbox_policy.h">
+      <Filter>include\jkj\fp\detail</Filter>
     </ClInclude>
-    <ClInclude Include="..\benchmark\ryu\d2fixed_full_table.h">
-      <Filter>benchmark\ryu</Filter>
+    <ClInclude Include="..\include\jkj\fp\detail\policy_holder.h">
+      <Filter>include\jkj\fp\detail</Filter>
     </ClInclude>
-    <ClInclude Include="..\benchmark\ryu\d2s_full_table.h">
-      <Filter>benchmark\ryu</Filter>
-    </ClInclude>
-    <ClInclude Include="..\benchmark\ryu\d2s_intrinsics.h">
-      <Filter>benchmark\ryu</Filter>
-    </ClInclude>
-    <ClInclude Include="..\benchmark\ryu\d2s_small_table.h">
-      <Filter>benchmark\ryu</Filter>
-    </ClInclude>
-    <ClInclude Include="..\benchmark\ryu\digit_table.h">
-      <Filter>benchmark\ryu</Filter>
-    </ClInclude>
-    <ClInclude Include="..\benchmark\ryu\f2s_full_table.h">
-      <Filter>benchmark\ryu</Filter>
-    </ClInclude>
-    <ClInclude Include="..\benchmark\ryu\f2s_intrinsics.h">
-      <Filter>benchmark\ryu</Filter>
-    </ClInclude>
-    <ClInclude Include="..\benchmark\ryu\ryu.h">
-      <Filter>benchmark\ryu</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="..\test\ryu_printf\generate_cache.cpp">
-      <Filter>test\ryu_printf</Filter>
-    </ClCompile>
-    <ClCompile Include="..\test\main.cpp">
-      <Filter>test</Filter>
-    </ClCompile>
-    <ClCompile Include="..\test\verify_log_computation.cpp">
-      <Filter>test</Filter>
-    </ClCompile>
-    <ClCompile Include="..\benchmark\ryu\d2fixed.c">
-      <Filter>benchmark\ryu</Filter>
-    </ClCompile>
-    <ClCompile Include="..\benchmark\ryu\d2s.c">
-      <Filter>benchmark\ryu</Filter>
-    </ClCompile>
-    <ClCompile Include="..\benchmark\ryu\f2s.c">
-      <Filter>benchmark\ryu</Filter>
-    </ClCompile>
   </ItemGroup>
 </Project>

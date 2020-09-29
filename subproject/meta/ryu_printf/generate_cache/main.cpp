@@ -15,10 +15,10 @@
 // is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
 // KIND, either express or implied.
 
-#include "../minmax_euclid.h"
-#include "../../include/jkj/fp/detail/util.h"
-#include "../../include/jkj/fp/detail/ryu_printf_cache.h"
-#include "../../include/jkj/fp/ryu_printf.h"
+#include "jkj/fp/detail/util.h"
+#include "jkj/fp/detail/ryu_printf_cache.h"
+#include "jkj/fp/ryu_printf.h"
+#include "minmax_euclid.h"
 #include "cache_write_helper.h"
 #include <iostream>
 #include <map>
@@ -247,33 +247,32 @@ namespace {
 
 #include <fstream>
 
-namespace jkj::fp {
-	namespace detail {
-		namespace ryu_printf {
-			void generate_cache()
-			{
-				std::ofstream out;
-				std::cout << "[Generating cache table...]\n";
+int main()
+{
+	std::ofstream out;
+	bool success = true;
+	std::cout << "[Generating cache table...]\n";
 
-				try {
-					std::cout << "\nGenerating cache table for IEEE-754 binary32 format...\n";
-					out.open("test_results/binary32_cache.txt");
-					write_to(out, generate_cache_impl<ieee754_format::binary32>());
-					out.close();
+	try {
+		std::cout << "\nGenerating cache table for IEEE-754 binary32 format...\n";
+		out.open("results/binary32_cache.txt");
+		write_to(out, generate_cache_impl<jkj::fp::ieee754_format::binary32>());
+		out.close();
 
-					std::cout << "\nGenerating cache table for IEEE-754 binary64 format...\n";
-					out.open("test_results/binary64_cache.txt");
-					write_to(out, generate_cache_impl<ieee754_format::binary64>());
-					out.close();
-				}
-				catch (std::exception& ex) {
-					std::cout << ex.what() << std::endl;
-				}
+		std::cout << "\nGenerating cache table for IEEE-754 binary64 format...\n";
+		out.open("results/binary64_cache.txt");
+		write_to(out, generate_cache_impl<jkj::fp::ieee754_format::binary64>());
+		out.close();
+	}
+	catch (std::exception& ex) {
+		std::cout << ex.what() << std::endl;
+		success = false;
+	}
 
+	std::cout << std::endl;
+	std::cout << "Done.\n\n\n";
 
-				std::cout << std::endl;
-				std::cout << "Done.\n\n\n";
-			}
-		}
+	if (!success) {
+		return -1;
 	}
 }

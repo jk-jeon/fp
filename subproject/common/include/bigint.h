@@ -22,7 +22,7 @@
 // This file is only used for cache generation, and need not be included for real use
 ////////////////////////////////////////////////////////////////////////////////////////
 
-#include "../include/jkj/fp/detail/wuint.h"
+#include "jkj/fp/detail/wuint.h"
 #include <algorithm>
 #include <cstddef>
 #include <cassert>
