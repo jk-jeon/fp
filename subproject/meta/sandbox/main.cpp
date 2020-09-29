@@ -1,4 +1,5 @@
 #include "jkj/fp/to_chars/fixed_precision.h"
+#include "random_float.h"
 
 namespace jkj::fp {
 	namespace detail {

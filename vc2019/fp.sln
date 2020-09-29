@@ -40,6 +40,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "include", "include", "{4FFE
 	ProjectSection(SolutionItems) = preProject
 		..\subproject\common\include\bigint.h = ..\subproject\common\include\bigint.h
 		..\subproject\common\include\minmax_euclid.h = ..\subproject\common\include\minmax_euclid.h
+		..\subproject\common\include\random_float.h = ..\subproject\common\include\random_float.h
 	EndProjectSection
 EndProject
 Global
