@@ -88,12 +88,12 @@ namespace jkj::fp {
 			detail::log::floor_log5_pow2(int(significand_bits + 2));
 
 		carrier_uint significand_;
+		int exponent_;
 		std::uint32_t segment_;
 		int segment_index_;		// n
 		int exponent_index_;	// k
 		int remainder_;			// r
-		int pow2_exponent_;
-		int pow2_exponent_upper_bound_;
+		int max_segment_index_;
 
 	public:
 		using impl_base::segment_size;
@@ -106,42 +106,42 @@ namespace jkj::fp {
 			using namespace detail;
 
 			significand_ = br.extract_significand_bits();
-			auto exponent = int(br.extract_exponent_bits());
+			exponent_ = int(br.extract_exponent_bits());
 
-			if (exponent != 0) {
+			if (exponent_ != 0) {
 				// If the input is normal
-				exponent += exponent_bias - significand_bits;
+				exponent_ += exponent_bias - significand_bits;
 				significand_ |= (carrier_uint(1) << significand_bits);
 
 				// n0 = floor((-e-p-1)log10(2) / eta) + 1
 				// Avoid signed division.
-				auto const dividend = log::floor_log10_pow2(-exponent - significand_bits - 1);
-				if (exponent <= -significand_bits - 1) {
+				auto const dividend = log::floor_log10_pow2(-exponent_ - significand_bits - 1);
+				if (exponent_ <= -significand_bits - 1) {
 					assert(dividend >= 0);
-					segment_index_ = unsigned(dividend) / unsigned(segment_size) + 1;
-					pow2_exponent_upper_bound_ = 0;
+					segment_index_ = int(unsigned(dividend) / unsigned(segment_size) + 1);
+					max_segment_index_ = int(unsigned(-exponent_) / unsigned(segment_size));
 				}
 				else {
 					assert(dividend < 0);
 					segment_index_ = -int(unsigned(-dividend) / unsigned(segment_size));
-					if (exponent < 0) {
-						pow2_exponent_upper_bound_ = 0;
+					if (exponent_ < 0) {
+						max_segment_index_ = int(unsigned(-exponent_) / unsigned(segment_size));
 					}
 					else {
-						pow2_exponent_upper_bound_ = exponent;
+						max_segment_index_ = 0;
 					}
 				}
 			}
 			else {
 				// If the input is subnormal
-				exponent = min_exponent - significand_bits;
+				exponent_ = min_exponent - significand_bits;
 
 				// n0 = floor((-e-p-1)log10(2) / eta) + 1
 				// Avoid signed division.
 				constexpr auto dividend = log::floor_log10_pow2(-min_exponent - 1);
 				static_assert(dividend >= 0);
-				segment_index_ = unsigned(dividend) / unsigned(segment_size) + 1;
-				pow2_exponent_upper_bound_ = 0;
+				segment_index_ = int(unsigned(dividend) / unsigned(segment_size) + 1);
+				max_segment_index_ = int(unsigned(-exponent_) / unsigned(segment_size));
 			}
 
 			// Align the implicit bit to the MSB.
@@ -150,14 +150,14 @@ namespace jkj::fp {
 			// We will compute the first segment.
 
 			// Avoid signed division.
-			pow2_exponent_ = exponent + segment_index_ * segment_size;
-			if (pow2_exponent_ >= 0) {
-				exponent_index_ = int(unsigned(pow2_exponent_) / unsigned(compression_factor));
-				remainder_ = int(unsigned(pow2_exponent_) % unsigned(compression_factor));
+			int pow2_exponent = exponent_ + segment_index_ * segment_size;
+			if (pow2_exponent >= 0) {
+				exponent_index_ = int(unsigned(pow2_exponent) / unsigned(compression_factor));
+				remainder_ = int(unsigned(pow2_exponent) % unsigned(compression_factor));
 			}
 			else {
-				exponent_index_ = -int(unsigned(-pow2_exponent_) / unsigned(compression_factor));
-				remainder_ = int(unsigned(-pow2_exponent_) % unsigned(compression_factor));
+				exponent_index_ = -int(unsigned(-pow2_exponent) / unsigned(compression_factor));
+				remainder_ = int(unsigned(-pow2_exponent) % unsigned(compression_factor));
 
 				if (remainder_ != 0) {
 					--exponent_index_;
@@ -183,23 +183,25 @@ namespace jkj::fp {
 		// This function does divisibility test whenever called.
 		// Cache the result of this function if it needs to be called several times.
 		bool has_further_nonzero_segments() const noexcept {
-			if (pow2_exponent_ >= pow2_exponent_upper_bound_) {
+			if (segment_index_ >= max_segment_index_) {
 				return false;
 			}
 			else {
 				// Check if there are reamining nonzero digits,
 				// which is equivalent to that f * 2^e * 10^(n * eta) is not an integer.
 
+				auto minus_pow5_exponent = -segment_index_ * segment_size;
+				auto minus_pow2_exponent = -exponent_ + minus_pow5_exponent;
+
 				// Check the exponent of 2.
-				if (pow2_exponent_ < 0 &&
+				if (minus_pow2_exponent > 0 &&
 					!detail::div::divisible_by_power_of_2(significand_,
-						-pow2_exponent_ + (carrier_bits - significand_bits - 1)))
+						minus_pow2_exponent + (carrier_bits - significand_bits - 1)))
 				{
 					return true;
 				}
 
 				// Check the exponent of 5.
-				auto minus_pow5_exponent = -segment_index_ * segment_size;
 				if (minus_pow5_exponent > 0 &&
 					(minus_pow5_exponent > max_power_of_factor_of_5 ||
 						!detail::div::divisible_by_power_of_5<max_power_of_factor_of_5 + 1>(
@@ -213,7 +215,7 @@ namespace jkj::fp {
 		}
 
 		JKJ_FORCEINLINE std::uint32_t compute_next_segment() noexcept {
-			if (pow2_exponent_ < pow2_exponent_upper_bound_) {
+			if (segment_index_ < max_segment_index_) {
 				increase_segment_index();
 			}
 			else {
@@ -232,9 +234,8 @@ namespace jkj::fp {
 		}
 
 		JKJ_FORCEINLINE void increase_segment_index() noexcept {
+			assert(segment_index_ < max_segment_index_);
 			++segment_index_;
-			assert(pow2_exponent_ < pow2_exponent_upper_bound_);
-			pow2_exponent_ += segment_size;
 
 			remainder_ += segment_size;
 			static_assert(segment_size < compression_factor);
