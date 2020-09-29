@@ -32,12 +32,16 @@ namespace jkj::fp {
 			assert(length >= 0);
 			auto ret = buffer + length;
 			while (length > 4) {
+#ifdef __clang__ // https://bugs.llvm.org/show_bug.cgi?id=38217
+				auto c = number - 1'0000 * (number / 1'0000);
+#else
 				auto c = number % 1'0000;
+#endif
 				number /= 1'0000;
-				std::memcpy(buffer + length - 4,
-					&detail::radix_100_table[(c / 100) * 2], 2);
 				std::memcpy(buffer + length - 2,
 					&detail::radix_100_table[(c % 100) * 2], 2);
+				std::memcpy(buffer + length - 4,
+					&detail::radix_100_table[(c / 100) * 2], 2);
 				length -= 4;
 			}
 			if (length > 2) {
@@ -56,20 +60,25 @@ namespace jkj::fp {
 			}
 			return ret;
 		}
-		char* print_nine_digits(char* buffer, std::uint32_t number) {
-			std::memcpy(buffer + 7,
-				&detail::radix_100_table[(number % 100) * 2], 2);
-			number /= 100;
-			std::memcpy(buffer + 5,
-				&detail::radix_100_table[(number % 100) * 2], 2);
-			number /= 100;
-			std::memcpy(buffer + 3,
-				&detail::radix_100_table[(number % 100) * 2], 2);
-			number /= 100;
-			std::memcpy(buffer + 1,
-				&detail::radix_100_table[(number % 100) * 2], 2);
-			number /= 100;
-			*buffer = char('0' + number);
+		JKJ_FORCEINLINE char* print_nine_digits(char* buffer, std::uint32_t number) {
+			if (number == 0) {
+				std::memset(buffer, '0', 9);
+			}
+			else {
+				for (int i = 0; i < 2; ++i) {
+#ifdef __clang__ // https://bugs.llvm.org/show_bug.cgi?id=38217
+					auto c = number - 1'0000 * (number / 1'0000);
+#else
+					auto c = number % 1'0000;
+#endif
+					number /= 1'0000;
+					std::memcpy(buffer + 7 - 4 * i,
+						&detail::radix_100_table[(c % 100) * 2], 2);
+					std::memcpy(buffer + 5 - 4 * i,
+						&detail::radix_100_table[(c / 100) * 2], 2);
+				}
+				*buffer = char('0' + number);
+			}
 			return buffer + 9;
 		}
 	}
