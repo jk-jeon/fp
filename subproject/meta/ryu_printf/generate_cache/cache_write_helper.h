@@ -168,12 +168,12 @@ namespace {
 	struct generated_cache {
 		using cache_holder = jkj::fp::detail::ryu_printf::cache_holder<format>;
 		using cache_entry_type = typename cache_holder::cache_entry_type;
-		using index_info_type = typename cache_holder::index_info_type;
+		using index_type = typename cache_holder::index_type;
 
 		int min_n;
 		int max_n;
 		std::vector<cache_entry_type> cache;
-		std::vector<index_info_type> index_info;
+		std::vector<index_type> starting_index_minus_min_k;
 	};
 
 	template <class GeneratedCache>
@@ -187,16 +187,13 @@ namespace {
 				out << ",\n\t";
 			}
 		}
-		out << "\n};\n\nstatic constexpr index_info_type index_info[] = {\n\t" << std::dec;
-		for (std::size_t i = 0; i < results.index_info.size(); ++i) {
-			out << "{ " << std::setfill(' ') << std::setw(4)
-				<< int(results.index_info[i].starting_index)
-				<< ", " << std::setfill(' ') << std::setw(4)
-				<< int(results.index_info[i].min_k)
-				<< " }";
+		out << "\n};\n\nstatic constexpr index_type starting_index_minus_min_k[] = {\n\t" << std::dec;
+		for (std::size_t i = 0; i < results.starting_index_minus_min_k.size(); ++i) {
+			out << std::setfill(' ') << std::setw(4)
+				<< int(results.starting_index_minus_min_k[i]);
 
-			if (i != results.index_info.size() - 1) {
-				if (i % 4 == 3) {
+			if (i != results.starting_index_minus_min_k.size() - 1) {
+				if (i % 8 == 7) {
 					out << ",\n\t";
 				}
 				else {

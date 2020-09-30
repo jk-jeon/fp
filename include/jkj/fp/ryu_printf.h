@@ -228,8 +228,8 @@ namespace jkj::fp {
 
 	private:
 		JKJ_FORCEINLINE std::uint32_t compute_segment() const noexcept {
-			auto index_info = cache_holder::get_index_info(segment_index_);
-			auto cache = cache_holder::cache[index_info.starting_index + (exponent_index_ - index_info.min_k)];
+			auto cache = cache_holder::cache[exponent_index_ +
+				cache_holder::get_starting_index_minus_min_k(segment_index_)];
 			return multiply_shift_mod(significand_, cache,
 				segment_bit_size + remainder_ - carrier_bits + significand_bits + 1);
 		}

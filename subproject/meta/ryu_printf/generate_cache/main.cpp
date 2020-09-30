@@ -232,11 +232,11 @@ namespace {
 		for (int n = min_n; n <= max_n; ++n) {
 			auto itr = k_ranges.find(n);
 			assert(itr != k_ranges.end());
-			assert(itr->second.min >= std::numeric_limits<index_type>::min() &&
-				itr->second.min <= std::numeric_limits<index_type>::max());
-			assert(sum >= std::numeric_limits<index_type>::min() &&
-				sum <= std::numeric_limits<index_type>::max());
-			results.index_info.push_back({ index_type(sum), index_type(itr->second.min) });
+
+			auto starting_index_minus_min_k = sum - itr->second.min;
+			assert(starting_index_minus_min_k >= std::numeric_limits<index_type>::min() &&
+				starting_index_minus_min_k <= std::numeric_limits<index_type>::max());
+			results.starting_index_minus_min_k.push_back(index_type(starting_index_minus_min_k));
 			sum += (itr->second.max - itr->second.min + 1);
 		}
 
