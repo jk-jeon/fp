@@ -53,6 +53,11 @@ namespace jkj::fp {
 					internal_ += n;
 					return *this;
 				}
+
+				uint128 operator>>(int sh) const noexcept {
+					assert(sh >= 0 && sh < 64);
+					return{ internal_ >> sh };
+				}
 #else
 				std::uint64_t	high_;
 				std::uint64_t	low_;
@@ -77,6 +82,16 @@ namespace jkj::fp {
 					high_ += (sum < low_ ? 1 : 0);
 					low_ = sum;
 					return *this;
+#endif
+				}
+
+				uint128 operator>>(int sh) const noexcept {
+					assert(sh >= 0 && sh < 64);
+#if defined(_MSC_VER) && defined(_M_X64)
+					return{ high_ >> sh, __shiftright128(low_, high_, (unsigned char)sh) };
+#else
+					return{ high_ >> sh,
+						sh == 0 ? low_ : ((high_ << (64 - sh)) | (low_ >> sh)) };
 #endif
 				}
 #endif

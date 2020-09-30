@@ -263,9 +263,7 @@ namespace jkj::fp {
 				auto mul_result = wuint::umul256_upper128(x, y);
 
 				assert(shift_amount > 0 && shift_amount <= 64);
-				auto shift_result = wuint::uint128{ mul_result.high() >> (64 - shift_amount),
-					shift_amount == 64 ? mul_result.low() :
-					(mul_result.high() << shift_amount) | (mul_result.low() >> (64 - shift_amount)) };
+				auto shift_result = mul_result >> (64 - shift_amount);
 
 				// Granlund-Montgomery style division by 10^9
 				constexpr auto L = 29;
