@@ -28,7 +28,7 @@
 namespace jkj::fp {
 	namespace detail {
 		// Some common routines
-		JKJ_FORCEINLINE char* print_number(char* buffer, std::uint32_t number, int length) {
+		JKJ_FORCEINLINE char* print_number(char* buffer, std::uint32_t number, int length) noexcept {
 			assert(length >= 0);
 			auto ret = buffer + length;
 			while (length > 4) {
@@ -60,7 +60,7 @@ namespace jkj::fp {
 			}
 			return ret;
 		}
-		JKJ_FORCEINLINE char* print_nine_digits(char* buffer, std::uint32_t number) {
+		JKJ_FORCEINLINE char* print_nine_digits(char* buffer, std::uint32_t number) noexcept {
 			if (number == 0) {
 				std::memset(buffer, '0', 9);
 			}
@@ -80,6 +80,38 @@ namespace jkj::fp {
 				*buffer = char('0' + number);
 			}
 			return buffer + 9;
+		}
+
+		JKJ_FORCEINLINE char* print_zero_or_nine(char* buffer, int length, char const d) noexcept {
+			assert(length >= 0);
+			while (length >= 4) {
+				// Both msvc and clang generate unnecessary memset call
+				//std::memset(buffer, d, 4);
+				buffer[0] = d;
+				buffer[1] = d;
+				buffer[2] = d;
+				buffer[3] = d;
+				buffer += 4;
+				length -= 4;
+			}
+			if (length >= 2) {
+				std::memset(buffer, d, 2);
+				buffer += 2;
+				length -= 2;
+			}
+			if (length > 0) {
+				std::memset(buffer, d, 1);
+				++buffer;
+			}
+			return buffer;
+		}
+
+		JKJ_FORCEINLINE char* print_zeros(char* buffer, int length) noexcept {
+			return print_zero_or_nine(buffer, length, '0');
+		}
+
+		JKJ_FORCEINLINE char* print_nines(char* buffer, int length) noexcept {
+			return print_zero_or_nine(buffer, length, '9');
 		}
 	}
 
@@ -312,8 +344,7 @@ namespace jkj::fp {
 								*buffer = '.';
 								++buffer;
 
-								std::memset(buffer, '0', precision);
-								buffer += precision;
+								buffer = detail::print_zeros(buffer, precision);
 								goto print_exponent_and_return_label;
 							}
 						}
@@ -411,8 +442,7 @@ namespace jkj::fp {
 											*buffer = '.';
 											++buffer;
 
-											std::memset(buffer, '0', number_of_trailing_9 + precision);
-											buffer += (number_of_trailing_9 + precision);
+											buffer = detail::print_zeros(buffer, number_of_trailing_9 + precision);
 											goto print_exponent_and_return_label;
 										}
 									}
@@ -422,8 +452,7 @@ namespace jkj::fp {
 									++buffer;
 									*buffer = '.';
 									++buffer;
-									std::memset(buffer, '9', number_of_trailing_9);
-									buffer += number_of_trailing_9;
+									buffer = detail::print_nines(buffer, number_of_trailing_9);
 									buffer = detail::print_number(buffer, next_digits, precision);
 									goto print_exponent_and_return_label;
 								}
@@ -443,8 +472,7 @@ namespace jkj::fp {
 							++buffer;
 							*buffer = '.';
 							++buffer;
-							std::memset(buffer, '9', number_of_trailing_9);
-							buffer += number_of_trailing_9;
+							buffer = detail::print_nines(buffer, number_of_trailing_9);
 						} // (current_digits + 1) * normalizer == 10'0000'0000
 						// If the current digits are not all 9's
 						else {
@@ -523,8 +551,7 @@ namespace jkj::fp {
 											++current_digits;
 											buffer = detail::print_number(buffer, current_digits,
 												current_digits_length);
-											std::memset(buffer, '0', number_of_trailing_9 + precision);
-											buffer += number_of_trailing_9 + precision;
+											buffer = detail::print_zeros(buffer, number_of_trailing_9 + precision);
 											goto print_exponent_and_return_label;
 										}
 									}
@@ -532,8 +559,7 @@ namespace jkj::fp {
 									// Print digits
 									buffer = detail::print_number(buffer,
 										current_digits, current_digits_length);
-									std::memset(buffer, '9', number_of_trailing_9);
-									buffer += number_of_trailing_9;
+									buffer = detail::print_nines(buffer, number_of_trailing_9);
 									buffer = detail::print_number(buffer, next_digits, precision);
 									goto print_exponent_and_return_label;
 								}
@@ -551,8 +577,7 @@ namespace jkj::fp {
 							// Digits until next_digits can be safely printed
 							buffer = detail::print_number(buffer, current_digits,
 								current_digits_length);
-							std::memset(buffer, '9', number_of_trailing_9);
-							buffer += number_of_trailing_9;
+							buffer = detail::print_nines(buffer, number_of_trailing_9);
 						} // (current_digits + 1) * normalizer != 10'0000'0000
 
 						assert(precision > 9);
@@ -567,8 +592,7 @@ namespace jkj::fp {
 							}
 							else {
 								buffer = detail::print_nine_digits(buffer, current_digits);
-								std::memset(buffer, '9', number_of_trailing_9);
-								buffer += number_of_trailing_9;
+								buffer = detail::print_nines(buffer, number_of_trailing_9);
 								number_of_trailing_9 = 0;
 								current_digits = next_digits;
 							}
@@ -639,16 +663,14 @@ namespace jkj::fp {
 								++current_digits;
 								assert(current_digits < 10'0000'0000);
 								buffer = detail::print_nine_digits(buffer, current_digits);
-								std::memset(buffer, '0', number_of_trailing_9 + precision);
-								buffer += (number_of_trailing_9 + precision);
+								buffer = detail::print_zeros(buffer, number_of_trailing_9 + precision);
 								goto print_exponent_and_return_label;
 							}
 						}
 
 						// Print digits
 						buffer = detail::print_nine_digits(buffer, current_digits);
-						std::memset(buffer, '9', number_of_trailing_9);
-						buffer += number_of_trailing_9;
+						buffer = detail::print_nines(buffer, number_of_trailing_9);
 						buffer = detail::print_number(buffer, next_digits, precision);
 					} // precision > current_digits_length
 				} // precision != 0
@@ -705,8 +727,7 @@ namespace jkj::fp {
 				else {
 					std::memcpy(buffer, "0.", 1);
 					buffer += 2;
-					std::memset(buffer, '0', precision);
-					return buffer + precision;
+					return detail::print_zeros(buffer, precision);
 				}
 			}
 		}
