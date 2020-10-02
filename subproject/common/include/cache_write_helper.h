@@ -16,6 +16,7 @@
 // KIND, either express or implied.
 
 #include "minmax_euclid.h"
+#include "jkj/fp/detail/wuint.h"
 #include <cassert>
 #include <iostream>
 #include <iomanip>
@@ -23,140 +24,46 @@
 #include <type_traits>
 
 namespace {
-	template <class OutputType, std::size_t array_size>
-	OutputType convert_to(jkj::fp::detail::bigint_impl<array_size> const& n) {
-		static_assert(std::is_same_v<std::uint64_t,
-			typename jkj::fp::detail::bigint_impl<array_size>::element_type>);
-
-		// Makes sure there is no overflow
-		if constexpr (std::is_same_v<OutputType, std::uint64_t>) {
-			assert(n.leading_one_pos.element_pos == 0);
-			return n.elements[0];
-		}
-		else if constexpr (std::is_same_v<OutputType, jkj::fp::detail::wuint::uint96>) {
-			assert(n.leading_one_pos.element_pos < 1 ||
-				(n.leading_one_pos.element_pos == 1 && n.leading_one_pos.bit_pos <= 32));
-			return{ std::uint32_t(n.elements[1]),
-				std::uint32_t(n.elements[0] >> 32),
-				std::uint32_t(n.elements[0]) };
-		}
-		else if constexpr (std::is_same_v<OutputType, jkj::fp::detail::wuint::uint128>) {
-			assert(n.leading_one_pos.element_pos <= 1);
-			return{ n.elements[1], n.elements[0] };
-		}
-		else if constexpr (std::is_same_v<OutputType, jkj::fp::detail::wuint::uint192>) {
-			assert(n.leading_one_pos.element_pos <= 2);
-			return{ n.elements[2], n.elements[1], n.elements[0] };
-		}
-		else {
-			static_assert(std::is_same_v<OutputType, jkj::fp::detail::wuint::uint256>);
-			assert(n.leading_one_pos.element_pos <= 3);
-			return{ n.elements[3], n.elements[2], n.elements[1], n.elements[0] };
-		}
-	}
-
-	template <std::size_t array_size, class InputType>
-	jkj::fp::detail::bigint_impl<array_size> convert_from(InputType const& n) {
-		static_assert(std::is_same_v<std::uint64_t,
-			typename jkj::fp::detail::bigint_impl<array_size>::element_type>);
-
-		jkj::fp::detail::bigint_impl<array_size> ret;
-
-		// Makes sure there is no overflow
-		if constexpr (std::is_same_v<InputType, std::uint64_t>) {
-			assert(array_size >= 1);
-			ret = n;
-		}
-		else if constexpr (std::is_same_v<InputType, jkj::fp::detail::wuint::uint96>) {
-			assert(array_size >= 2);
-			ret = n.high();
-			ret *= jkj::fp::detail::bigint_impl<array_size>::power_of_2(64);
-			ret += (std::uint64_t(n.middle()) << 32) | std::uint64_t(n.low());
-		}
-		else if constexpr (std::is_same_v<InputType, jkj::fp::detail::wuint::uint128>) {
-			assert(array_size >= 2);
-			ret = n.high();
-			ret *= jkj::fp::detail::bigint_impl<array_size>::power_of_2(64);
-			ret += n.low();
-		}
-		else if constexpr (std::is_same_v<InputType, jkj::fp::detail::wuint::uint192>) {
-			assert(array_size >= 3);
-			ret = n.high();
-			ret *= jkj::fp::detail::bigint_impl<array_size>::power_of_2(64);
-			ret += n.middle();
-			ret *= jkj::fp::detail::bigint_impl<array_size>::power_of_2(64);
-			ret += n.low();
-		}
-		else {
-			static_assert(std::is_same_v<InputType, jkj::fp::detail::wuint::uint256>);
-			assert(array_size >= 4);
-			ret = n.high();
-			ret *= jkj::fp::detail::bigint_impl<array_size>::power_of_2(64);
-			ret += n.middle_high();
-			ret *= jkj::fp::detail::bigint_impl<array_size>::power_of_2(64);
-			ret += n.middle_low();
-			ret *= jkj::fp::detail::bigint_impl<array_size>::power_of_2(64);
-			ret += n.low();
-		}
-		
-		return ret;
-	}
-
-	template <class CacheEntryType>
-	std::ostream& print_to(CacheEntryType const& x, std::ostream& out) {
+	template <class CacheEntryType, std::size_t array_size>
+	std::ostream& print_as(std::ostream& out, jkj::fp::detail::bigint_impl<array_size> const& x) {
 		if constexpr (std::is_same_v<CacheEntryType, std::uint64_t>) {
-			out << "0x" << std::hex << std::setw(16) << std::setfill('0') << x;
+			assert(x.leading_one_pos.element_pos == 0);
+			out << "0x" << std::hex << std::setw(16) << std::setfill('0') << x.elements[0];
 		}
-		else if constexpr (std::is_same_v<CacheEntryType, jkj::fp::detail::wuint::uint96>) {
-			out << "{ 0x" << std::hex << std::setw(8) << std::setfill('0') << x.high()
-				<< ", 0x" << std::hex << std::setw(8) << std::setfill('0') << x.middle()
-				<< ", 0x" << std::hex << std::setw(8) << std::setfill('0') << x.low() << " }";
+		else if constexpr (std::is_same_v<CacheEntryType, jkj::fp::detail::wuint::uint96> ||
+			std::is_same_v<CacheEntryType, std::uint32_t[3]>)
+		{
+			assert(x.leading_one_pos.element_pos < 1 ||
+				(x.leading_one_pos.element_pos == 1 && x.leading_one_pos.bit_pos <= 32));
+			out << "{ 0x" << std::hex << std::setw(8) << std::setfill('0') << std::uint32_t(x.elements[1])
+				<< ", 0x" << std::hex << std::setw(8) << std::setfill('0') << std::uint32_t(x.elements[0] >> 32)
+				<< ", 0x" << std::hex << std::setw(8) << std::setfill('0') << std::uint32_t(x.elements[0]) << " }";
 		}
-		else if constexpr (std::is_same_v<CacheEntryType, jkj::fp::detail::wuint::uint128>) {
-			out << "{ 0x" << std::hex << std::setw(16) << std::setfill('0') << x.high()
-				<< ", 0x" << std::hex << std::setw(16) << std::setfill('0') << x.low() << " }";
+		else if constexpr (std::is_same_v<CacheEntryType, jkj::fp::detail::wuint::uint128> ||
+			std::is_same_v<CacheEntryType, std::uint64_t[2]>)
+		{
+			assert(x.leading_one_pos.element_pos <= 1);
+			out << "{ 0x" << std::hex << std::setw(16) << std::setfill('0') << x.elements[1]
+				<< ", 0x" << std::hex << std::setw(16) << std::setfill('0') << x.elements[0] << " }";
 		}
-		else if constexpr(std::is_same_v<CacheEntryType, jkj::fp::detail::wuint::uint192>) {
-			out << "{ 0x" << std::hex << std::setw(16) << std::setfill('0') << x.high()
-				<< ", 0x" << std::hex << std::setw(16) << std::setfill('0') << x.middle()
-				<< ", 0x" << std::hex << std::setw(16) << std::setfill('0') << x.low() << " }";
+		else if constexpr(std::is_same_v<CacheEntryType, jkj::fp::detail::wuint::uint192> || 
+			std::is_same_v<CacheEntryType, std::uint64_t[3]>)
+		{
+			assert(x.leading_one_pos.element_pos <= 2);
+			out << "{ 0x" << std::hex << std::setw(16) << std::setfill('0') << x.elements[2]
+				<< ", 0x" << std::hex << std::setw(16) << std::setfill('0') << x.elements[1]
+				<< ", 0x" << std::hex << std::setw(16) << std::setfill('0') << x.elements[0] << " }";
 		}
 		else {
-			static_assert(std::is_same_v<CacheEntryType, jkj::fp::detail::wuint::uint256>);
-			out << "{ 0x" << std::hex << std::setw(16) << std::setfill('0') << x.high()
-				<< ", 0x" << std::hex << std::setw(16) << std::setfill('0') << x.middle_high()
-				<< ", 0x" << std::hex << std::setw(16) << std::setfill('0') << x.middle_low()
-				<< ", 0x" << std::hex << std::setw(16) << std::setfill('0') << x.low() << " }";
+			static_assert(std::is_same_v<CacheEntryType, jkj::fp::detail::wuint::uint256> ||
+				std::is_same_v<CacheEntryType, std::uint64_t[4]>);
+
+			assert(x.leading_one_pos.element_pos <= 3);
+			out << "{ 0x" << std::hex << std::setw(16) << std::setfill('0') << x.elements[3]
+				<< ", 0x" << std::hex << std::setw(16) << std::setfill('0') << x.elements[2]
+				<< ", 0x" << std::hex << std::setw(16) << std::setfill('0') << x.elements[1]
+				<< ", 0x" << std::hex << std::setw(16) << std::setfill('0') << x.elements[0] << " }";
 		}
 		return out;
-	}
-
-	template <class T>
-	std::string_view name_of() {
-		if constexpr (std::is_same_v<T, std::uint8_t>) {
-			return "std::uint8_t";
-		}
-		else if constexpr (std::is_same_v<T, std::uint16_t>) {
-			return "std::uint16_t";
-		}
-		else if constexpr (std::is_same_v<T, std::uint32_t>) {
-			return "std::uint32_t";
-		}
-		else if constexpr (std::is_same_v<T, std::uint64_t>) {
-			return "std::uint8_t";
-		}
-		else if constexpr (std::is_same_v<T, jkj::fp::detail::wuint::uint96>) {
-			return "wuint::uint96";
-		}
-		else if constexpr (std::is_same_v<T, jkj::fp::detail::wuint::uint128>) {
-			return "wuint::uint128";
-		}
-		else if constexpr (std::is_same_v<T, jkj::fp::detail::wuint::uint192>) {
-			return "wuint::uint192";
-		}
-		else {
-			static_assert(std::is_same_v<T, jkj::fp::detail::wuint::uint256>);
-			return "wuint::uint256";
-		}
 	}
 }

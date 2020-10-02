@@ -121,6 +121,7 @@ namespace jkj::fp {
 			struct uint192 {
 				uint192() = default;
 
+# if 0
 				std::uint64_t	high_;
 				std::uint64_t	middle_;
 				std::uint64_t	low_;
@@ -137,6 +138,22 @@ namespace jkj::fp {
 				constexpr std::uint64_t low() const noexcept {
 					return low_;
 				}
+#else
+				std::uint64_t	segments_[3];
+
+				constexpr uint192(std::uint64_t high, std::uint64_t middle, std::uint64_t low) noexcept :
+					segments_{ high, middle, low } {}
+
+				constexpr std::uint64_t high() const noexcept {
+					return segments_[0];
+				}
+				constexpr std::uint64_t middle() const noexcept {
+					return segments_[1];
+				}
+				constexpr std::uint64_t low() const noexcept {
+					return segments_[2];
+				}
+#endif
 			};
 
 			struct uint256 {

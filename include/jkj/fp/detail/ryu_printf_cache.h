@@ -19,17 +19,23 @@
 #define JKJ_HEADER_FP_RYU_PRINTF_CACHE
 
 #include "../ieee754_format.h"
-#include "wuint.h"
+#include <cassert>
 
 namespace jkj::fp {
 	namespace detail {
 		namespace ryu_printf {
+			// Built-in C-arrays don't obey the correct value-semantics.
+			// But it seems that compilers are doing some needless pessimization
+			// (e.g., generating needless vector-mov instructions)
+			// if we use struct's with the correct value-semantics.
+			// Hence, I made cache_entry_type's to be C-arrays.
+
 			template <ieee754_format format>
 			struct cache_holder;
 
 			template <>
 			struct cache_holder<ieee754_format::binary32> {
-				using cache_entry_type = wuint::uint96;
+				using cache_entry_type = std::uint32_t[3];
 				using index_type = std::int16_t;
 				static constexpr int cache_bits = 96;
 				static constexpr int multiply_and_reduce_result_bits = 64;
@@ -201,7 +207,7 @@ namespace jkj::fp {
 
 			template <>
 			struct cache_holder<ieee754_format::binary64> {
-				using cache_entry_type = wuint::uint192;
+				using cache_entry_type = std::uint64_t[3];
 				using index_type = std::int16_t;
 				static constexpr int cache_bits = 192;
 				static constexpr int multiply_and_reduce_result_bits = 128;

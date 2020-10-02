@@ -28,7 +28,7 @@
 namespace jkj::fp {
 	namespace detail {
 		// Some common routines
-		JKJ_FORCEINLINE char* print_number(char* buffer, std::uint32_t number, int length) noexcept {
+		char* print_number(char* buffer, std::uint32_t number, int length) noexcept {
 			assert(length >= 0);
 			auto ret = buffer + length;
 			while (length > 4) {
@@ -60,7 +60,7 @@ namespace jkj::fp {
 			}
 			return ret;
 		}
-		JKJ_FORCEINLINE char* print_nine_digits(char* buffer, std::uint32_t number) noexcept {
+		char* print_nine_digits(char* buffer, std::uint32_t number) noexcept {
 			if (number == 0) {
 				std::memset(buffer, '0', 9);
 			}
@@ -82,7 +82,7 @@ namespace jkj::fp {
 			return buffer + 9;
 		}
 
-		JKJ_FORCEINLINE char* print_zero_or_nine(char* buffer, int length, char const d) noexcept {
+		char* print_zero_or_nine(char* buffer, int length, char const d) noexcept {
 			assert(length >= 0);
 			while (length >= 4) {
 				// Both msvc and clang generate unnecessary memset call
@@ -106,11 +106,11 @@ namespace jkj::fp {
 			return buffer;
 		}
 
-		JKJ_FORCEINLINE char* print_zeros(char* buffer, int length) noexcept {
+		char* print_zeros(char* buffer, int length) noexcept {
 			return print_zero_or_nine(buffer, length, '0');
 		}
 
-		JKJ_FORCEINLINE char* print_nines(char* buffer, int length) noexcept {
+		char* print_nines(char* buffer, int length) noexcept {
 			return print_zero_or_nine(buffer, length, '9');
 		}
 	}
@@ -124,6 +124,13 @@ namespace jkj::fp {
 
 	// Fixed-precision formatting in scientific form
 	// precision means the number of significand digits excluding the first digit.
+	//
+	// NOTE: It should be easy enough to modify this function to be strictly single-pass.
+	// It is in fact "almost" single-pass already.
+	// Hence, we can in fact make buffer to be any forward iterator.
+	// However, it seems that today's compilers are not smart enough to optimize well
+	// the case when buffer is of type char* if we do that.
+	// So I leave this function to take char* rather than a general iterator.
 	template <class Float>
 	char* to_chars_fixed_precision_scientific(Float x, char* buffer, int precision) noexcept {
 		assert(precision >= 0);
@@ -189,7 +196,8 @@ namespace jkj::fp {
 					}
 					else {
 						first_digit = char(rp.current_segment());
-						next_digits_normalized = rp.compute_next_segment();
+						rp.compute_next_segment();
+						next_digits_normalized = rp.current_segment();
 						exponent = 9 - rp.current_segment_index() * 9;
 					}
 
@@ -263,7 +271,8 @@ namespace jkj::fp {
 					}
 					else {
 						first_digit = char(rp.current_segment());
-						current_digits = rp.compute_next_segment();
+						rp.compute_next_segment();
+						current_digits = rp.current_segment();
 						normalizer = 1;
 						current_digits_length = 9;
 					}
@@ -323,7 +332,8 @@ namespace jkj::fp {
 							}
 						} // precision < current_digits_length
 						else {
-							remainder = rp.compute_next_segment();
+							rp.compute_next_segment();
+							remainder = rp.current_segment();
 						}
 
 						// Determine rounding.
@@ -360,7 +370,8 @@ namespace jkj::fp {
 					else {
 						int number_of_trailing_9;
 						precision -= current_digits_length;
-						auto next_digits = rp.compute_next_segment();
+						rp.compute_next_segment();
+						auto next_digits = rp.current_segment();
 
 						// If the current digits are all 9's
 						if ((current_digits + 1) * normalizer == 10'0000'0000) {
@@ -420,7 +431,8 @@ namespace jkj::fp {
 
 									default:
 										assert(precision == 9);
-										remainder = rp.compute_next_segment();
+										rp.compute_next_segment();
+										remainder = rp.current_segment();
 										normalizer = 1;
 									}
 
@@ -460,7 +472,8 @@ namespace jkj::fp {
 								if (next_digits == 9'9999'9999) {
 									number_of_trailing_9 += 9;
 									precision -= 9;
-									next_digits = rp.compute_next_segment();
+									rp.compute_next_segment();
+									next_digits = rp.current_segment();
 								}
 								else {
 									break;
@@ -538,7 +551,8 @@ namespace jkj::fp {
 
 									default:
 										assert(precision == 9);
-										remainder = rp.compute_next_segment();
+										rp.compute_next_segment();
+										remainder = rp.current_segment();
 										normalizer = 1;
 									}
 
@@ -567,7 +581,8 @@ namespace jkj::fp {
 								if (next_digits == 9'9999'9999) {
 									number_of_trailing_9 += 9;
 									precision -= 9;
-									next_digits = rp.compute_next_segment();
+									rp.compute_next_segment();
+									next_digits = rp.current_segment();
 								}
 								else {
 									break;
@@ -583,10 +598,23 @@ namespace jkj::fp {
 						assert(precision > 9);
 						number_of_trailing_9 = 0;
 						current_digits = next_digits;
-						next_digits = rp.compute_next_segment();
-						precision -= 9;
 
-						while (precision > 9) {
+						while (true) {
+							precision -= 9;
+							// If all nonzero segments are exhausted,
+							if (!rp.compute_next_segment()) {
+								// Print trailing 9's and 0's
+								buffer = detail::print_nine_digits(buffer, current_digits);
+								buffer = detail::print_nines(buffer, number_of_trailing_9);
+								buffer = detail::print_zeros(buffer, precision);
+								goto print_exponent_and_return_label;
+							}
+
+							next_digits = rp.current_segment();
+							if (precision <= 9) {
+								break;
+							}
+
 							if (next_digits == 9'9999'9999) {
 								number_of_trailing_9 += 9;
 							}
@@ -596,8 +624,6 @@ namespace jkj::fp {
 								number_of_trailing_9 = 0;
 								current_digits = next_digits;
 							}
-							precision -= 9;
-							next_digits = rp.compute_next_segment();
 						}
 
 						// Print the last segment
@@ -650,7 +676,8 @@ namespace jkj::fp {
 
 						default:
 							assert(precision == 9);
-							remainder = rp.compute_next_segment();
+							rp.compute_next_segment();
+							remainder = rp.current_segment();
 							normalizer = 1;
 						}
 

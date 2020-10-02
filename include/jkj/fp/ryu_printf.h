@@ -23,6 +23,7 @@
 #include "detail/log.h"
 #include "detail/ryu_printf_cache.h"
 #include "detail/util.h"
+#include "detail/wuint.h"
 #include "detail/macros.h"
 #include <cassert>
 #include <cstdint>
@@ -215,20 +216,23 @@ namespace jkj::fp {
 			}
 		}
 
-		JKJ_FORCEINLINE std::uint32_t compute_next_segment() noexcept {
+		// Returns true if there might be nonzero segments remaining,
+		// and returns false if all following segments are zero.
+		JKJ_FORCEINLINE bool compute_next_segment() noexcept {
 			++segment_index_;
 			if (segment_index_ <= max_segment_index_) {
 				on_increase_segment_index();
+				return true;
 			}
 			else {
 				segment_ = 0;
+				return false;
 			}
-			return segment_;
 		}
 
 	private:
 		JKJ_FORCEINLINE std::uint32_t compute_segment() const noexcept {
-			auto cache = cache_holder::cache[exponent_index_ +
+			auto const& cache = cache_holder::cache[exponent_index_ +
 				cache_holder::get_starting_index_minus_min_k(segment_index_)];
 			return multiply_shift_mod(significand_, cache,
 				segment_bit_size + remainder_ - carrier_bits + significand_bits + 1);
@@ -253,14 +257,15 @@ namespace jkj::fp {
 			if constexpr (format == ieee754_format::binary32) {
 				static_assert(value_bits<carrier_uint> <= 32);
 				assert(shift_amount > 0 && shift_amount <= 32);
-				auto shift_result = wuint::umul128_upper64(x, y) >> (32 - shift_amount);
+				auto shift_result = wuint::umul128_upper64(x, { y[0], y[1] })
+					>> (32 - shift_amount);
 
 				return std::uint32_t(shift_result % segment_divisor);
 			}
 			else {
 				static_assert(format == ieee754_format::binary64);
 				static_assert(value_bits<carrier_uint> <= 64);
-				auto mul_result = wuint::umul256_upper128(x, y);
+				auto mul_result = wuint::umul256_upper128(x, { y[0], y[1], y[2] });
 
 				assert(shift_amount > 0 && shift_amount <= 64);
 				auto shift_result = mul_result >> (64 - shift_amount);

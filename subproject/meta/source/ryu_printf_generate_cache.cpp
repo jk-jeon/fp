@@ -15,9 +15,9 @@
 // is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
 // KIND, either express or implied.
 
+#include "jkj/fp/ryu_printf.h"
 #include "jkj/fp/detail/util.h"
 #include "jkj/fp/detail/ryu_printf_cache.h"
-#include "jkj/fp/ryu_printf.h"
 #include "cache_write_helper.h"
 #include "minmax_euclid.h"
 #include <iostream>
@@ -27,7 +27,7 @@
 #include <string>
 #include <vector>
 
-template <jkj::fp::ieee754_format format>
+template <jkj::fp::ieee754_format format, std::size_t array_size>
 struct generated_cache {
 	using cache_holder = jkj::fp::detail::ryu_printf::cache_holder<format>;
 	using cache_entry_type = typename cache_holder::cache_entry_type;
@@ -35,7 +35,7 @@ struct generated_cache {
 
 	int min_n;
 	int max_n;
-	std::vector<cache_entry_type> cache;
+	std::vector<jkj::fp::detail::bigint_impl<array_size>> cache;
 	std::vector<index_type> starting_index_minus_min_k;
 };
 
@@ -45,7 +45,7 @@ void write_to(std::ostream& out, GeneratedCache const& results) {
 	out << "static constexpr int max_n = " << results.max_n << ";\n\n";
 	out << "static constexpr cache_entry_type cache[] = {\n\t";
 	for (std::size_t i = 0; i < results.cache.size(); ++i) {
-		print_to(results.cache[i], out);
+		print_as<typename GeneratedCache::cache_entry_type>(out, results.cache[i]);
 		if (i != results.cache.size() - 1) {
 			out << ",\n\t";
 		}
@@ -69,7 +69,7 @@ void write_to(std::ostream& out, GeneratedCache const& results) {
 }
 
 template <jkj::fp::ieee754_format format>
-generated_cache<format> generate_cache_impl()
+auto generate_cache_impl()
 {
 	using namespace jkj::fp::detail;
 	using ieee754_format_info = jkj::fp::ieee754_format_info<format>;
@@ -189,7 +189,7 @@ generated_cache<format> generate_cache_impl()
 
 	// Computes cache
 	int n = 0;
-	generated_cache<format> results;
+	generated_cache<format, bigint_t::array_size> results;
 
 	for (; n <= -min_n; ++n) {
 		// For nonnegative n
@@ -209,7 +209,7 @@ generated_cache<format> generate_cache_impl()
 			else {
 				auto cache = shift_result->resulting_number;
 				cache.long_division(divisor);
-				results.cache.push_back(convert_to<cache_entry_type>(cache));
+				results.cache.push_back(cache);
 			}
 		}
 
@@ -231,7 +231,7 @@ generated_cache<format> generate_cache_impl()
 				else {
 					auto cache = shift_result->resulting_number;
 					cache.long_division(divisor);
-					results.cache.insert(results.cache.begin(), convert_to<cache_entry_type>(cache));
+					results.cache.insert(results.cache.begin(), cache);
 				}
 			}
 		}
@@ -256,7 +256,7 @@ generated_cache<format> generate_cache_impl()
 			else {
 				auto cache = shift_result->resulting_number;
 				cache.long_division(divisor);
-				results.cache.push_back(convert_to<cache_entry_type>(cache));
+				results.cache.push_back(cache);
 			}
 		}
 
