@@ -245,7 +245,7 @@ namespace jkj::fp {
 			segment_ = compute_segment();
 		}
 
-		JKJ_SAFEBUFFERS static std::uint32_t multiply_shift_mod(carrier_uint x,
+		JKJ_SAFEBUFFERS JKJ_FORCEINLINE static std::uint32_t multiply_shift_mod(carrier_uint x,
 			cache_entry_type const& y, int shift_amount) noexcept
 		{
 			using namespace detail;
