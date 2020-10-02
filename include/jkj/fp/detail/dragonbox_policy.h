@@ -20,6 +20,7 @@
 
 #include "../decimal_fp.h"
 #include "../ieee754_format.h"
+#include "log.h"
 #include "dragonbox_cache.h"
 
 namespace jkj::fp {
