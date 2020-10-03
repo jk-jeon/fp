@@ -55,10 +55,13 @@ function(add_test NAME)
               /Zi /permissive-
               $<$<NOT:$<CXX_COMPILER_ID:Clang>>:/experimental:newLambdaProcessor>
               $<$<CONFIG:Release>:/GL>)
-      target_link_options(${NAME} PUBLIC /LTCG /DEBUG:FASTLINK)
+      target_link_options(${NAME} PUBLIC $<$<CONFIG:Release>:/LTCG> /DEBUG:FASTLINK)
       set_target_properties(${NAME} PROPERTIES 
             VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}")
   endif()
 endfunction()
 
+add_test(test_bigint)
+add_test(test_minmax_euclid)
+add_test(test_policy_holder)
 add_test(verify_log_computation)

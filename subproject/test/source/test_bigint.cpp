@@ -15,7 +15,17 @@
 // is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
 // KIND, either express or implied.
 
+#include "bigint.h"
+#include <iostream>
+
 int main()
 {
+	using jkj::fp::detail::bigint;
+
+	bool success = true;
+
+	std::cout << "[Policy holder test]\n";
+
+	// log2p1
 
 }

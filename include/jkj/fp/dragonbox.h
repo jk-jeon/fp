@@ -20,14 +20,13 @@
 #define JKJ_HEADER_FP_DRAGONBOX
 
 #include "decimal_fp.h"
+#include "policy.h"
 #include "detail/bits.h"
 #include "detail/div.h"
-#include "detail/dragonbox_policy.h"
 #include "detail/log.h"
-#include "detail/macros.h"
-#include "detail/policy_holder.h"
 #include "detail/util.h"
 #include "detail/wuint.h"
+#include "detail/macros.h"
 #include <cassert>
 #include <cstdint>
 #include <limits>
@@ -935,33 +934,34 @@ namespace jkj::fp {
 	////////////////////////////////////////////////////////////////////////////////////////
 
 	template <class Float, class... Policies>
-	JKJ_SAFEBUFFERS JKJ_FORCEINLINE auto dragonbox(Float x, Policies... policies)
+	JKJ_SAFEBUFFERS JKJ_FORCEINLINE auto dragonbox(Float x, Policies&&... policies)
 	{
 		// Build policy holder type
-		using namespace detail::dragonbox::policy;
+		using namespace policy;
 		using namespace detail::policy;
-		using policy_holder = decltype(make_policy_holder(
-				base_default_pair_list<
-					base_default_pair<sign::base, sign::return_sign>,
-					base_default_pair<trailing_zero::base, trailing_zero::remove>,
-					base_default_pair<binary_rounding::base, binary_rounding::nearest_to_even>,
-					base_default_pair<decimal_rounding::base, decimal_rounding::to_even>,
-					base_default_pair<cache::base, cache::fast>,
-					base_default_pair<input_validation::base, input_validation::assert_finite>
-				>{}, policies...));
+		auto policy_holder = make_policy_holder(
+			make_default_list(
+				make_default<policy_kind::sign>(sign::propagate),
+				make_default<policy_kind::trailing_zero>(trailing_zero::remove),
+				make_default<policy_kind::binary_rounding>(binary_rounding::nearest_to_even),
+				make_default<policy_kind::decimal_rounding>(decimal_rounding::to_even),
+				make_default<policy_kind::cache>(cache::fast),
+				make_default<policy_kind::input_validation>(input_validation::assert_finite)),
+			std::forward<Policies>(policies)...);
 
 		using return_type = decimla_fp<Float,
-			policy_holder::return_has_sign,
-			policy_holder::report_trailing_zeros>;
+			decltype(policy_holder)::return_has_sign,
+			decltype(policy_holder)::report_trailing_zeros>;
 
 		auto br = ieee754_bits(x);
-		policy_holder::validate_input(br);
+		policy_holder.validate_input(br);
 
-		return policy_holder::delegate(br,
+		return policy_holder.delegate(br,
 			[br](auto interval_type_provider) {
-				constexpr auto tag = decltype(interval_type_provider)::tag;
+				using detail::dragonbox::policy::binary_rounding::tag_t;
+				constexpr tag_t tag = decltype(interval_type_provider)::tag;
 
-				if constexpr (tag == binary_rounding::tag_t::to_nearest) {
+				if constexpr (tag == tag_t::to_nearest) {
 					return detail::dragonbox::impl<Float>::template
 						compute_nearest<return_type, decltype(interval_type_provider),
 							typename policy_holder::sign_policy,
@@ -970,7 +970,7 @@ namespace jkj::fp {
 							typename policy_holder::cache_policy
 						>(br);
 				}
-				else if constexpr (tag == binary_rounding::tag_t::left_closed_directed) {
+				else if constexpr (tag == tag_t::left_closed_directed) {
 					return detail::dragonbox::impl<Float>::template
 						compute_left_closed_directed<return_type,
 							typename policy_holder::sign_policy,

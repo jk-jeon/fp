@@ -28,20 +28,19 @@ namespace jkj::fp {
 
 	// Returns the next-to-end position
 	template <class Float, class... Policies>
-	char* to_chars_n(Float x, char* buffer, Policies... policies)
+	char* to_chars_n(Float x, char* buffer, Policies&&... policies)
 	{
 		using namespace jkj::fp::detail::policy;
-		using namespace jkj::fp::detail::dragonbox::policy;
-		using policy_holder = decltype(make_policy_holder(
-			base_default_pair_list<
-				base_default_pair<trailing_zero::base, trailing_zero::remove>,
-				base_default_pair<binary_rounding::base, binary_rounding::nearest_to_even>,
-				base_default_pair<decimal_rounding::base, decimal_rounding::to_even>,
-				base_default_pair<cache::base, cache::fast>
-			>{}, policies...));
+		using policy_holder_t = decltype(make_policy_holder(
+			make_default_list(
+				make_default<policy_kind::trailing_zero>(policy::trailing_zero::remove),
+				make_default<policy_kind::binary_rounding>(policy::binary_rounding::nearest_to_even),
+				make_default<policy_kind::decimal_rounding>(policy::decimal_rounding::to_even),
+				make_default<policy_kind::cache>(policy::cache::compact)),
+			std::forward<Policies>(policies)...));
 
-		static_assert(!policy_holder::report_trailing_zeros,
-			"jkj::dragonbox::policy::trailing_zeros::report is not valid for to_chars & to_chars_n");
+		static_assert(!policy_holder_t::report_trailing_zeros,
+			"jkj::fp::policy::trailing_zero::report is not valid for to_chars & to_chars_n");
 
 		using ieee754_format_info = ieee754_format_info<ieee754_traits<Float>::format>;
 
@@ -54,10 +53,7 @@ namespace jkj::fp {
 			if (br.is_nonzero()) {
 				return detail::to_chars(dragonbox(x,
 					policy::sign::ignore,
-					typename policy_holder::trailing_zero_policy{},
-					typename policy_holder::rounding_mode_policy{},
-					typename policy_holder::correct_rounding_policy{},
-					typename policy_holder::cache_policy{}),
+					std::forward<Policies>(policies)...),
 					buffer);
 			}
 			else {

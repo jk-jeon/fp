@@ -45,7 +45,7 @@ if (MSVC)
               /Zi /permissive-
               $<$<NOT:$<CXX_COMPILER_ID:Clang>>:/experimental:newLambdaProcessor>
               $<$<CONFIG:Release>:/GL>)
-    target_link_options(benchmark PUBLIC /LTCG /DEBUG:FASTLINK)
+    target_link_options(benchmark PUBLIC $<$<CONFIG:Release>:/LTCG> /DEBUG:FASTLINK)
     set_target_properties(benchmark PROPERTIES 
             VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}")
 endif()

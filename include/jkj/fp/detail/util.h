@@ -65,6 +65,18 @@ namespace jkj::fp {
 
 		template <class UInt, UInt a, std::size_t table_size>
 		using pow_table = pow_table_impl<UInt, a, std::make_index_sequence<table_size>>;
+
+		// C++20 std::remove_cvref_t
+		template <class T>
+		struct remove_cvref {
+			using type = std::remove_cv_t<std::remove_reference_t<T>>;
+		};
+		template <class T>
+		using remove_cvref_t = typename remove_cvref<T>::type;
+
+		// A simple utility class
+		template <class... T>
+		struct typelist {};
 	}
 }
 

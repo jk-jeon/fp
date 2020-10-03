@@ -15,8 +15,8 @@
 // is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
 // KIND, either express or implied.
 
-#ifndef JKJ_HEADER_FP_DRAGONBOX_POLICY
-#define JKJ_HEADER_FP_DRAGONBOX_POLICY
+#ifndef JKJ_HEADER_FP_POLICY
+#define JKJ_HEADER_FP_POLICY
 
 #include "../decimal_fp.h"
 #include "../ieee754_format.h"
@@ -24,7 +24,259 @@
 #include "dragonbox_cache.h"
 
 namespace jkj::fp {
+	// We want the list of policy kinds to be open-ended, so
+	// we use tag types rather than enums here
+	namespace policy_kind {
+		// Determines between shortest-roundtrip/fixed-precision output.
+		struct precision {};
+
+		// Determines between scientific/fixed-point/general output.
+		struct output_format {};
+
+		// Propagates or ignores the sign.
+		struct sign {};
+
+		// Determines what to do with trailing zeros in the output.
+		struct trailing_zero {};
+
+		// Determines the rounding mode of binary IEEE-754 encoded data.
+		struct binary_rounding {};
+
+		// Determines the rounding mode of decimal conversion.
+		struct decimal_rounding {};
+
+		// Determines which cache table to use.
+		struct cache {};
+
+		// Determines what to do with invalid inputs.
+		struct input_validation {};
+	}
+
 	namespace detail {
+		namespace policy {
+			// The library will specify a list of accepted kinds of policies and their defaults,
+			// and the user will pass a list of policies. The aim of helper classes/functions here
+			// is to do the following:
+			//   1. Check if the policy parameters given by the user are all valid; that means,
+			//      each of them should be of the kinds specified by the library.
+			//      If that's not the case, then the compilation fails.
+			//   2. Check if multiple policy parameters for the same kind is specified by the user.
+			//      If that's the case, then the compilation fails.
+			//   3. Build a class deriving from all policies the user have given, and also from
+			//      the default policies if the user did not specify one for some kinds.
+			// A policy belongs to a certain kind if it is deriving from a base class.
+
+			// For a given kind, find a policy belonging to that kind.
+			// Check if there are more than one such policies.
+			enum class policy_found_info {
+				not_found, unique, repeated
+			};
+			template <class Policy, policy_found_info info>
+			struct found_policy {
+				static constexpr auto found_info = info;
+				Policy&& policy;
+
+				constexpr Policy&& get() {
+					return static_cast<Policy&&>(policy);
+				}
+			};
+			template <class DefaultPolicyGenerator>
+			struct found_policy<DefaultPolicyGenerator, policy_found_info::not_found> {
+				static constexpr auto found_info = policy_found_info::not_found;
+				DefaultPolicyGenerator&& generator;
+
+				constexpr decltype(auto) get() {
+					return std::forward<DefaultPolicyGenerator>(generator)();
+				}
+			};
+
+			template <class... T>
+			struct typelist {};
+
+			template <class Kind, class DefaultPolicyGenerator>
+			struct kind_default {
+				using policy_kind = Kind;
+				DefaultPolicyGenerator&& generator;
+
+				template <class FoundPolicy>
+				static constexpr FoundPolicy&& get_policy_impl(FoundPolicy&& fp) {
+					return std::forward<FoundPolicy>(fp);
+				}
+				template <class FoundPolicy, class FirstPolicy, class... RemainingPolicies>
+				static constexpr auto get_policy_impl(FoundPolicy&& fp,
+					FirstPolicy&& first_policy, RemainingPolicies&&... remaining_policies)
+				{
+					if constexpr (std::is_same_v<Kind,
+						typename std::remove_cv_t<std::remove_reference_t<FirstPolicy>>::policy_kind>)
+					{
+						if constexpr (std::remove_cv_t<std::remove_reference_t<FoundPolicy>>::found_info
+							== policy_found_info::not_found)
+						{
+							return get_policy_impl(
+								found_policy<FirstPolicy, policy_found_info::unique>{
+									std::forward<FirstPolicy>(first_policy)
+								}, std::forward<RemainingPolicies>(remaining_policies)...);
+						}
+						else {
+							return get_policy_impl(
+								found_policy<FirstPolicy, policy_found_info::repeated>{
+									std::forward<FirstPolicy>(first_policy)
+								}, std::forward<RemainingPolicies>(remaining_policies)...);
+						}
+					}
+					else {
+						return get_policy_impl(std::forward<FoundPolicy>(fp),
+							std::forward<RemainingPolicies>(remaining_policies)...);
+					}
+				}
+
+				template <class... Policies>
+				constexpr auto get_policy(Policies&&... policies) {
+					return get_policy_impl(
+						found_policy<DefaultPolicyGenerator, policy_found_info::not_found>{
+							std::forward<DefaultPolicyGenerator>(generator)
+						}, std::forward<Policies>(policies)...);
+				}
+			};
+
+			// Check if a given policy belongs to one of the kinds specified by the library
+			template <class Policy>
+			constexpr bool check_policy_validity(typelist<Policy>, typelist<>)
+			{
+				return false;
+			}
+			template <class Policy, class FirstKindDefault, class... RemainingKindDefaults>
+			constexpr bool check_policy_validity(typelist<Policy>,
+				typelist<FirstKindDefault, RemainingKindDefaults...>)
+			{
+				return std::is_same_v<
+					typename FirstKindDefault::policy_kind,
+					typename Policy::policy_kind> ||
+					check_policy_validity(typelist<Policy>{},
+						typelist<RemainingKindDefaults...>{});
+			}
+
+			template <class KindDefaultTypelist>
+			constexpr bool check_policy_list_validity(typelist<>, KindDefaultTypelist) {
+				return true;
+			}
+
+			template <class FirstPolicy, class... RemainingPolicies, class KindDefaultTypelist>
+			constexpr bool check_policy_list_validity(
+				typelist<FirstPolicy, RemainingPolicies...>, KindDefaultTypelist)
+			{
+				return check_policy_validity(typelist<FirstPolicy>{}, KindDefaultTypelist{}) &&
+					check_policy_list_validity(typelist<RemainingPolicies...>{},
+						KindDefaultTypelist{});
+			}
+
+			// Build policy_holder
+			template <bool repeated_, class... FoundPolicies>
+			struct found_policy_tuple : FoundPolicies... {
+				static constexpr bool repeated = repeated_;
+			};
+			template <class... KindDefaults>
+			struct kind_default_tuple : KindDefaults... {
+				using kind_default_typelist = typelist<KindDefaults...>;
+			};
+
+			template <class... Policies>
+			struct policy_holder : Policies... {};
+
+			template <bool repeated, class... FoundPolicies, class... Policies>
+			constexpr auto make_policy_holder_impl(
+				kind_default_tuple<>&&,
+				found_policy_tuple<repeated, FoundPolicies...>&& found,
+				Policies&&...)
+			{
+				return found_policy_tuple<repeated, FoundPolicies...>{
+					static_cast<FoundPolicies&&>(found)...
+				};
+			}
+
+			template <class FirstKindDefault, class... RemainingKindDefaults,
+				bool repeated, class... FoundPolicies, class... Policies>
+			constexpr auto make_policy_holder_impl(
+				kind_default_tuple<FirstKindDefault, RemainingKindDefaults...>&& defaults,
+				found_policy_tuple<repeated, FoundPolicies...>&& found,
+				Policies&&... policies)
+			{
+				using new_found_policy_pair =
+					decltype(static_cast<FirstKindDefault&&>(defaults).get_policy(std::forward(policies)...));
+
+				return make_policy_holder_impl(
+					kind_default_tuple<RemainingKindDefaults...>{
+						static_cast<RemainingKindDefaults&&>(defaults)...
+					},
+					found_policy_tuple<
+						repeated || new_found_policy_pair::found_info == policy_found_info::repeated,
+						new_found_policy_pair, FoundPolicies...
+					>{
+						static_cast<FirstKindDefault&&>(defaults).get_policy(std::forward(policies)...),
+						static_cast<FoundPolicies&&>(found)...
+					}, std::forward<Policies>(policies)...);
+			}
+
+			template <bool repeated, class... RawPolicies>
+			constexpr auto convert_to_policy_holder(
+				found_policy_tuple<repeated>&&, RawPolicies&&... policies)
+			{
+				return policy_holder<
+					std::remove_cv_t<std::remove_reference_t<RawPolicies>>...
+				>{ std::forward<RawPolicies>(policies)... };
+			}
+
+			template <bool repeated, class FirstFoundPolicy, class... RemainingFoundPolicies, class... RawPolicies>
+			constexpr auto convert_to_policy_holder(
+				found_policy_tuple<repeated, FirstFoundPolicy, RemainingFoundPolicies...>&& found,
+				RawPolicies&&... policies)
+			{
+				return convert_to_policy_holder(
+					found_policy_tuple<repeated, RemainingFoundPolicies...>{
+						static_cast<RemainingFoundPolicies&&>(found)...
+					},
+					static_cast<FirstFoundPolicy&&>(found).get(),
+					std::forward<RawPolicies>(policies)...);
+			}
+
+			template <class KindDefaultTuple, class... Policies>
+			constexpr auto make_policy_holder(KindDefaultTuple&& defaults, Policies&&... policies)
+			{
+				static_assert(check_policy_list_validity(
+					typelist<std::remove_cv_t<std::remove_reference_t<Policies>...>>{},
+					typename std::remove_cv_t<std::remove_reference_t<KindDefaultTuple>>::kind_default_typelist{}),
+					"jkj::fp: an invalid policy is specified");
+
+				using found_policies = decltype(make_policy_holder_impl(
+					std::forward<KindDefaultTuple>(defaults),
+					found_policy_tuple<false>{},
+					std::forward<Policies>(policies)...));
+
+				static_assert(!found_policies::repeated,
+					"jkj::fp: each policy kind should be specified at most once");
+
+				return convert_to_policy_holder(make_policy_holder_impl(
+					std::forward<KindDefaultTuple>(defaults),
+					found_policy_tuple<false>{},
+					std::forward<Policies>(policies)...));
+			}
+
+			template <class Kind, class DefaultGenerator>
+			constexpr kind_default<Kind, DefaultGenerator> make_default_generator(DefaultGenerator&& generator) {
+				return{ std::forward<DefaultGenerator>(generator) };
+			}
+
+			template <class Kind, class DefaultPolicy>
+			constexpr auto make_default(DefaultPolicy&& policy) {
+				return make_default_generator<Kind>([&policy]() { return std::forward<DefaultPolicy>(policy); });
+			}
+
+			template <class... KindDefaults>
+			constexpr kind_default_tuple<KindDefaults...> make_default_list(KindDefaults&&... defaults) {
+				return{ std::forward<KindDefaults>(defaults)... };
+			}
+		}
+
 		namespace dragonbox {
 			// Forward declare the implementation class
 			template <class Float>
@@ -43,8 +295,8 @@ namespace jkj::fp {
 						static constexpr void handle_sign(ieee754_bits<Float>, Fp&) noexcept {}
 					};
 
-					struct return_sign : base {
-						using sign_policy = return_sign;
+					struct propagate : base {
+						using sign_policy = propagate;
 						static constexpr bool return_has_sign = true;
 
 						template <class Float, class Fp>
@@ -58,8 +310,8 @@ namespace jkj::fp {
 				namespace trailing_zero {
 					struct base {};
 
-					struct ignore : base {
-						using trailing_zero_policy = ignore;
+					struct allow : base {
+						using trailing_zero_policy = allow;
 						static constexpr bool report_trailing_zeros = false;
 
 						template <class Fp>
@@ -615,11 +867,11 @@ namespace jkj::fp {
 	namespace policy {
 		namespace sign {
 			static constexpr auto ignore = detail::dragonbox::policy::sign::ignore{};
-			static constexpr auto return_sign = detail::dragonbox::policy::sign::return_sign{};
+			static constexpr auto propagate = detail::dragonbox::policy::sign::propagate{};
 		}
 
 		namespace trailing_zero {
-			static constexpr auto ignore = detail::dragonbox::policy::trailing_zero::ignore{};
+			static constexpr auto allow = detail::dragonbox::policy::trailing_zero::allow{};
 			static constexpr auto remove = detail::dragonbox::policy::trailing_zero::remove{};
 			static constexpr auto report = detail::dragonbox::policy::trailing_zero::report{};
 		}

@@ -26,10 +26,8 @@ set(jkj_fp_headers
         include/jkj/fp/detail/bits.h
         include/jkj/fp/detail/div.h
         include/jkj/fp/detail/dragonbox_cache.h
-        include/jkj/fp/detail/dragonbox_policy.h
         include/jkj/fp/detail/log.h
         include/jkj/fp/detail/macros.h
-        include/jkj/fp/detail/policy_holder.h
         include/jkj/fp/detail/ryu_printf_cache.h
         include/jkj/fp/detail/undef_macros.h
         include/jkj/fp/detail/util.h
@@ -37,6 +35,7 @@ set(jkj_fp_headers
         include/jkj/fp/decimal_fp.h
         include/jkj/fp/dragonbox.h
         include/jkj/fp/ieee754_format.h
+        include/jkj/fp/policy.h
         include/jkj/fp/ryu_printf.h)
 
 target_include_directories(jkj_fp
