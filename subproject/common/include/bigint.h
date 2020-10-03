@@ -120,7 +120,7 @@ namespace jkj::fp {
 			// Returns the number of multiplications
 			// Precondition: n should be bigger than or equal to the current number
 			// Note that this function need not require &n != this
-			std::size_t multiply_2_until(bigint_impl const& n)& {
+			std::size_t multiply_2_until(bigint_impl const& n) & {
 				assert(leading_one_pos.bit_pos != 0);
 
 				std::size_t number_of_multiplications = 0;
@@ -205,7 +205,7 @@ namespace jkj::fp {
 			}
 
 			// Multiply 5 to the current number
-			void multiply_5()& {
+			void multiply_5() & {
 				assert(leading_one_pos.bit_pos != 0);
 
 				decltype(elements) times_4;
@@ -266,7 +266,7 @@ namespace jkj::fp {
 			}
 
 			// Multiply 2 to the current number
-			void multiply_2()& {
+			void multiply_2() & {
 				// Shift to left by 1
 				element_type carry = 0;
 				for (std::size_t idx = 0; idx < leading_one_pos.element_pos; ++idx) {
@@ -515,7 +515,7 @@ namespace jkj::fp {
 				return m + n;
 			}
 
-			// Subtract one
+			// Add one
 			// Precondition: no overflow
 			constexpr bigint_impl& operator++()& {
 				std::size_t idx = 0;
@@ -527,11 +527,12 @@ namespace jkj::fp {
 				++elements[idx];
 
 				// Find the new leading-1 position
-				if (elements[idx] == 1) {
+				if (idx > leading_one_pos.element_pos) {
+					assert(elements[idx] == 1);
 					++leading_one_pos.element_pos;
 					leading_one_pos.bit_pos = 1;
 				}
-				else {
+				else if (idx == leading_one_pos.element_pos) {
 					leading_one_pos.bit_pos = log2p1(elements[idx]);
 				}
 
