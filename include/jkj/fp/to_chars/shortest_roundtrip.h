@@ -26,7 +26,7 @@ namespace jkj::fp {
 		char* to_chars(unsigned_fp_t<double> v, char* buffer);
 	}
 
-	// Returns the next-to-end position
+	// Returns the next-to-end position.
 	template <class Float, class... Policies>
 	char* to_chars_n(Float x, char* buffer, Policies&&... policies)
 	{
@@ -36,7 +36,7 @@ namespace jkj::fp {
 				make_default<policy_kind::trailing_zero>(policy::trailing_zero::remove),
 				make_default<policy_kind::binary_rounding>(policy::binary_rounding::nearest_to_even),
 				make_default<policy_kind::decimal_rounding>(policy::decimal_rounding::to_even),
-				make_default<policy_kind::cache>(policy::cache::compact)),
+				make_default<policy_kind::cache>(policy::cache::fast)),
 			std::forward<Policies>(policies)...));
 
 		static_assert(!policy_holder_t::report_trailing_zeros,
@@ -78,7 +78,7 @@ namespace jkj::fp {
 		}
 	}
 
-	// Null-terminate and bypass the return value of fp_to_chars_n
+	// Null-terminates and bypass the return value of fp_to_chars_n.
 	template <class Float, class... Policies>
 	char* to_chars(Float x, char* buffer, Policies... policies)
 	{

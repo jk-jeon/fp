@@ -250,7 +250,8 @@ namespace jkj::fp {
 			// Our end-goal is to construct an instance of this class.
 			template <class... Policies>
 			struct JKJ_EMPTY_BASE policy_holder : Policies... {
-				policy_holder(Policies&&... policies) : Policies{ std::forward<Policies>(policies) }... {}
+				template <class... PolicyRefs>
+				policy_holder(PolicyRefs&&... policies) : Policies{ std::forward<PolicyRefs>(policies) }... {}
 			};
 
 			// Convert an instance of found_policy_tuple into an instance of policy_holder,

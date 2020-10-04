@@ -124,6 +124,7 @@ namespace jkj::fp {
 
 	// Fixed-precision formatting in scientific form
 	// precision means the number of significand digits excluding the first digit.
+	// This function does not null-terminate the buffer.
 	//
 	// NOTE: It should be easy enough to modify this function to be strictly single-pass.
 	// It is in fact "almost" single-pass already.
@@ -132,7 +133,7 @@ namespace jkj::fp {
 	// the case when buffer is of type char* if we do that.
 	// So I leave this function to take char* rather than a general iterator.
 	template <class Float>
-	char* to_chars_fixed_precision_scientific(Float x, char* buffer, int precision) noexcept {
+	char* to_chars_fixed_precision_scientific_n(Float x, char* buffer, int precision) noexcept {
 		assert(precision >= 0);
 
 		using ieee754_format_info = ieee754_format_info<ieee754_traits<Float>::format>;
@@ -364,7 +365,7 @@ namespace jkj::fp {
 						*buffer = '.';
 						++buffer;
 
-						buffer = detail::print_number(buffer, current_digits, current_digits_length);
+						buffer = detail::print_number(buffer, current_digits, precision);
 					} // precision <= current_digits_length
 					// If there are more digits to be generated
 					else {
@@ -710,8 +711,8 @@ namespace jkj::fp {
 					buffer += 2;
 				}
 				else {
-					*buffer = 'e';
-					++buffer;
+					std::memcpy(buffer, "e+", 2);
+					buffer += 2;
 				}
 				if constexpr (ieee754_format_info::format == ieee754_format::binary64) {
 					auto uexp = unsigned(exponent);
@@ -722,27 +723,17 @@ namespace jkj::fp {
 						*buffer = char('0' + (uexp % 10));
 						++buffer;
 					}
-					else if (uexp >= 10) {
+					else {
 						std::memcpy(buffer, &detail::radix_100_table[uexp * 2], 2);
 						buffer += 2;
-					}
-					else {
-						*buffer = char('0' + uexp);
-						++buffer;
 					}
 					return buffer;
 				}
 				else {
 					static_assert(ieee754_format_info::format == ieee754_format::binary32);
 					assert(exponent < 100);
-					if (exponent >= 10) {
-						std::memcpy(buffer, &detail::radix_100_table[exponent * 2], 2);
-						buffer += 2;
-					}
-					else {
-						*buffer = char('0' + exponent);
-						++buffer;
-					}
+					std::memcpy(buffer, &detail::radix_100_table[exponent * 2], 2);
+					buffer += 2;
 					return buffer;
 				}
 			}
@@ -759,20 +750,30 @@ namespace jkj::fp {
 			}
 		}
 		else {
+			if (br.is_negative()) {
+				*buffer = '-';
+				++buffer;
+			}
+
 			if ((br.u << (ieee754_format_info::exponent_bits + 1)) != 0)
 			{
-				std::memcpy(buffer, "NaN", 3);
+				std::memcpy(buffer, "nan", 3);
 				return buffer + 3;
 			}
-			else {
-				if (br.is_negative()) {
-					*buffer = '-';
-					++buffer;
-				}
+			else {				
 				std::memcpy(buffer, "Infinity", 8);
 				return buffer + 8;
 			}
 		}
+	}
+
+	// Same as to_chars_fixed_precision_scientific, but null-terminates the buffer.
+	// Returns the pointer to the added null character.
+	template <class Float>
+	char* to_chars_fixed_precision_scientific(Float x, char* buffer, int precision) noexcept {
+		auto ptr = to_chars_fixed_precision_scientific_n(x, buffer, precision);
+		*ptr = '\0';
+		return ptr;
 	}
 }
 

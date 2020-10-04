@@ -16,7 +16,7 @@ int main()
 {
 	using namespace jkj::fp::detail;
 
-#if 0
+#if 1
 	while (true) {
 		double x;
 		int precision;
@@ -44,7 +44,7 @@ int main()
 	}
 #else
 	// Benchmark
-	constexpr std::size_t number_of_samples = 100000;
+	constexpr std::size_t number_of_samples = 1000000;
 	auto running_time = std::chrono::seconds(5);
 	auto buffer = std::make_unique<char[]>(10000);
 

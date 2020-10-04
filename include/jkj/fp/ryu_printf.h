@@ -100,6 +100,10 @@ namespace jkj::fp {
 		using impl_base::segment_size;
 		using impl_base::segment_divisor;
 
+		static constexpr auto max_nonzero_decimal_digits =
+			detail::log::floor_log10_pow5(significand_bits - min_exponent) +
+			detail::log::floor_log10_pow2(significand_bits) + 2;
+
 		// Computes the first segmnet on construction.
 		ryu_printf(Float x) noexcept : ryu_printf(ieee754_bits{ x }) {}
 
@@ -257,7 +261,7 @@ namespace jkj::fp {
 			if constexpr (format == ieee754_format::binary32) {
 				static_assert(value_bits<carrier_uint> <= 32);
 				assert(shift_amount > 0 && shift_amount <= 32);
-				auto shift_result = wuint::umul128_upper64(x, { y[0], y[1] })
+				auto shift_result = wuint::umul128_upper64(x, { y[0], y[1], y[2] })
 					>> (32 - shift_amount);
 
 				return std::uint32_t(shift_result % segment_divisor);

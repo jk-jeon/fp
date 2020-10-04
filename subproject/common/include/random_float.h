@@ -101,7 +101,7 @@ namespace jkj::fp {
 			auto significand_bits = uniform_distribution{ 0,
 				(carrier_uint(1) << ieee754_format_info::significand_bits) - 1 }(rg);
 
-			auto bit_representation = (sign_bit << (ieee754_traits::carrier_bits - 1))
+			auto bit_representation = (sign_bit << (ieee754_traits<Float>::carrier_bits - 1))
 				| (exponent_bits << (ieee754_format_info::significand_bits))
 				| significand_bits;
 

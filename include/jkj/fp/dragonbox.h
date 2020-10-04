@@ -712,12 +712,12 @@ namespace jkj::fp {
 
 						// If the number is divisible by 1'0000'0000, work with the quotient
 						if (t >= 8) {
-							auto quotient_candidate = n * divtable.mod_inv[8];
+							auto quotient_candidate = n * divtable[8].mod_inv;
 
-							if (quotient_candidate <= divtable.max_quotients[8]) {
+							if (quotient_candidate <= divtable[8].max_quotient) {
 								auto quotient = std::uint32_t(quotient_candidate >> 8);
 
-								constexpr auto mod_inverse = std::uint32_t(divtable.mod_inv[1]);
+								constexpr auto mod_inverse = std::uint32_t(divtable[1].mod_inv);
 								constexpr auto max_quotient =
 									std::numeric_limits<std::uint32_t>::max() / 5;
 
@@ -738,7 +738,7 @@ namespace jkj::fp {
 						auto quotient = std::uint32_t(div::divide_by_pow10<8, 54, 0>(n));
 						auto remainder = std::uint32_t(n - 1'0000'0000 * quotient);
 
-						constexpr auto mod_inverse = std::uint32_t(divtable.mod_inv[1]);
+						constexpr auto mod_inverse = std::uint32_t(divtable[1].mod_inv);
 						constexpr auto max_quotient =
 							std::numeric_limits<std::uint32_t>::max() / 5;
 
@@ -949,6 +949,8 @@ namespace jkj::fp {
 				make_default<policy_kind::input_validation>(input_validation::assert_finite)),
 			std::forward<Policies>(policies)...);
 
+		using policy_holder_t = decltype(policy_holder);
+
 		using return_type = decimla_fp<Float,
 			decltype(policy_holder)::return_has_sign,
 			decltype(policy_holder)::report_trailing_zeros>;
@@ -964,26 +966,26 @@ namespace jkj::fp {
 				if constexpr (tag == tag_t::to_nearest) {
 					return detail::dragonbox::impl<Float>::template
 						compute_nearest<return_type, decltype(interval_type_provider),
-							typename policy_holder::sign_policy,
-							typename policy_holder::trailing_zero_policy,
-							typename policy_holder::decimal_rounding_policy,
-							typename policy_holder::cache_policy
+							typename policy_holder_t::sign_policy,
+							typename policy_holder_t::trailing_zero_policy,
+							typename policy_holder_t::decimal_rounding_policy,
+							typename policy_holder_t::cache_policy
 						>(br);
 				}
 				else if constexpr (tag == tag_t::left_closed_directed) {
 					return detail::dragonbox::impl<Float>::template
 						compute_left_closed_directed<return_type,
-							typename policy_holder::sign_policy,
-							typename policy_holder::trailing_zero_policy,
-							typename policy_holder::cache_policy
+							typename policy_holder_t::sign_policy,
+							typename policy_holder_t::trailing_zero_policy,
+							typename policy_holder_t::cache_policy
 						>(br);
 				}
 				else {
 					return detail::dragonbox::impl<Float>::template
 						compute_right_closed_directed<return_type,
-							typename policy_holder::sign_policy,
-							typename policy_holder::trailing_zero_policy,
-							typename policy_holder::cache_policy
+							typename policy_holder_t::sign_policy,
+							typename policy_holder_t::trailing_zero_policy,
+							typename policy_holder_t::cache_policy
 						>(br);
 				}
 			});
