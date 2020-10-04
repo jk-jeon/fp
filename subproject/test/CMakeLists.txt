@@ -1,11 +1,11 @@
 cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 
-project(dragonboxTests LANGUAGES CXX)
+project(jkj_fp_tests LANGUAGES CXX)
 
 # ---- Add dependencies ----
 
 # We want warnings in tests
-set(dragonbox_INCLUDE_WITHOUT_SYSTEM ON CACHE INTERNAL "")
+set(jkj_fp_INCLUDE_WITHOUT_SYSTEM ON CACHE INTERNAL "")
 
 include(FetchContent)
 if (NOT TARGET jkj_fp)

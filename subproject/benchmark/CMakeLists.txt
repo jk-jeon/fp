@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 
-project(benchmark LANGUAGES CXX)
+project(jkj_fp_benchmark LANGUAGES CXX)
+
+# ---- Add dependencies ----
 
 include(FetchContent)
 if (NOT TARGET jkj_fp)
@@ -16,20 +18,22 @@ if (NOT TARGET ryu)
     FetchContent_MakeAvailable(ryu)
 endif()
 
-#set(benchmark_headers include/benchmark.h)
+# ---- Fixed-precision Benchmark ----
 
-set(benchmark_sources
-        source/ryu_printf.cpp)
+add_executable(fixed_precision_benchmark
+        include/fixed_precision_benchmark.h
+        source/fixed_precision_benchmark.cpp
+        source/fp_fixed_precision.cpp
+        source/ryu_fixed_precision.cpp
+        source/fmt_fixed_precision.cpp)
 
-add_executable(benchmark ${benchmark_headers} ${benchmark_sources})
+target_compile_features(fixed_precision_benchmark PRIVATE cxx_std_17)
 
-target_compile_features(benchmark PRIVATE cxx_std_17)
-
-target_include_directories(benchmark
+target_include_directories(fixed_precision_benchmark
         PRIVATE
         $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>)
 
-target_link_libraries(benchmark
+target_link_libraries(fixed_precision_benchmark
         PRIVATE
         ryu::ryu
         jkj_fp::common
@@ -41,11 +45,11 @@ if (MSVC)
     # /permissive- should be the default
     # The compilation will fail without /experimental:newLambdaProcessor
     # See also https://gitlab.kitware.com/cmake/cmake/-/issues/16478
-    target_compile_options(benchmark PUBLIC
+    target_compile_options(fixed_precision_benchmark PUBLIC
               /Zi /permissive-
               $<$<NOT:$<CXX_COMPILER_ID:Clang>>:/experimental:newLambdaProcessor>
               $<$<CONFIG:Release>:/GL>)
-    target_link_options(benchmark PUBLIC $<$<CONFIG:Release>:/LTCG> /DEBUG:FASTLINK)
-    set_target_properties(benchmark PROPERTIES 
+    target_link_options(fixed_precision_benchmark PUBLIC $<$<CONFIG:Release>:/LTCG> /DEBUG:FASTLINK)
+    set_target_properties(fixed_precision_benchmark PROPERTIES 
             VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}")
 endif()
