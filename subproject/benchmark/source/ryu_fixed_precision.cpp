@@ -14,3 +14,24 @@
 // Unless required by applicable law or agreed to in writing, this software
 // is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
 // KIND, either express or implied.
+
+#include "fixed_precision_benchmark.h"
+#include "ryu/ryu.h"
+
+namespace {
+	void float_to_chars(float x, char* buffer, int precision)
+	{
+		d2exp_buffered(x, precision, buffer);
+	}
+	void double_to_chars(double x, char* buffer, int precision)
+	{
+		d2exp_buffered(x, precision, buffer);
+	}
+
+	auto dummy = []() -> register_function_for_fixed_precision_benchmark {
+		return{ "Ryu",
+			float_to_chars,
+			double_to_chars
+		};
+	}();
+}

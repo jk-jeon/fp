@@ -14,3 +14,24 @@
 // Unless required by applicable law or agreed to in writing, this software
 // is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
 // KIND, either express or implied.
+
+#include "fixed_precision_benchmark.h"
+#include "jkj/fp/to_chars/fixed_precision.h"
+
+namespace {
+	void float_to_chars(float x, char* buffer, int precision)
+	{
+		jkj::fp::to_chars_fixed_precision_scientific_n(x, buffer, precision);
+	}
+	void double_to_chars(double x, char* buffer, int precision)
+	{
+		jkj::fp::to_chars_fixed_precision_scientific_n(x, buffer, precision);
+	}
+
+	auto dummy = []() -> register_function_for_fixed_precision_benchmark {
+		return{ "fp",
+			float_to_chars,
+			double_to_chars
+		};
+	}();
+}

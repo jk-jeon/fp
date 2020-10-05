@@ -465,3 +465,7 @@ MigrationBackup/
 /subproject/benchmark/results/digits_benchmark_binary64.csv
 /subproject/benchmark/results/digits_benchmark_binary32.pdf
 /subproject/benchmark/results/digits_benchmark_binary32.csv
+/subproject/benchmark/results/fixed_precision_benchmark_binary32.pdf
+/subproject/benchmark/results/fixed_precision_benchmark_binary32.csv
+/subproject/benchmark/results/fixed_precision_benchmark_binary64.pdf
+/subproject/benchmark/results/fixed_precision_benchmark_binary64.csv
