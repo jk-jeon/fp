@@ -10,10 +10,12 @@ It aims to be a building block for higher-level libraries with high-performance 
 Here is the list of algorithms that `fp` supports (or will support in a future).
 
 ## Shortest-roundtrip binary-to-decimal conversion
-Dragonbox. To be prepared.
+To be prepared. [Dragonbox](https://github.com/jk-jeon/dragonbox) will be integrated later.
 
 ## Fixed-precision binary-to-decimal conversion
-`fp` implements Ulf Adams' [Ryu-printf](https://dl.acm.org/doi/pdf/10.1145/3360595) algorithm.
+`fp` implements Ulf Adams' [Ryu-printf](https://dl.acm.org/doi/pdf/10.1145/3360595) algorithm. One of the design goal of `fp`'s implementation of Ryu-printf is to cleanly separate the core algorithm (binary-to-decimal conversion) from the string generation. To achieve that goal, `fp` offers a stateful class `jkj::fp::ryu_printf<Float>` that implements the core algorithm, defined in the header [`jkj/fp/ryu_printf.h`](include/jkj/fp/ryu_printf.h).
+
+`fp`'s implementation uses fewer amount of static data (about `39KB`) compared to the [reference implementation](https://github.com/ulfjack/ryu) (about `102KB`), yet, is faster for small precision and is comparable for large precision; see [benchmark](https://github.com/jk-jeon/fp#about-the-name-dragonbox).
 
 ## Limited-precision decimal-to-binary conversion
 To be prepared.
@@ -23,6 +25,19 @@ To be prepared.
 
 # Language Standard
 The library is targetting C++17 and actively using its features (e.g., if constexpr).
+
+# Benchmark
+
+## Fixed-precision binary-to-decimal conversion
+Average time consumed for a complete string generation in scientific format for given precision for uniformly randomly generated samples (top: `float`, bottom: `double`):
+
+(Clang)
+![fixed_precision_benchmark_binary32](subproject/benchmark/results/fixed_precision_benchmark_binary32_clang.png)
+![fixed_precision_benchmark_binary64](subproject/benchmark/results/fixed_precision_benchmark_binary64_clang.png)
+
+(MSVC)
+![fixed_precision_benchmark_binary32](subproject/benchmark/results/fixed_precision_benchmark_binary32_msvc.png)
+![fixed_precision_benchmark_binary64](subproject/benchmark/results/fixed_precision_benchmark_binary64_msvc.png)
 
 # License
 All code, except for those belong to third-party libraries, is licensed under either of
