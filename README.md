@@ -15,7 +15,7 @@ To be prepared. [Dragonbox](https://github.com/jk-jeon/dragonbox) will be integr
 ## Fixed-precision binary-to-decimal conversion
 `fp` implements Ulf Adams' [Ryu-printf](https://dl.acm.org/doi/pdf/10.1145/3360595) algorithm. One of the design goal of `fp`'s implementation of Ryu-printf is to cleanly separate the core algorithm (binary-to-decimal conversion) from the string generation. To achieve that goal, `fp` offers a stateful class `jkj::fp::ryu_printf<Float>` that implements the core algorithm, defined in the header [`jkj/fp/ryu_printf.h`](include/jkj/fp/ryu_printf.h).
 
-`fp`'s implementation uses fewer amount of static data (about `39KB`) compared to the [reference implementation](https://github.com/ulfjack/ryu) (about `102KB`), yet, is faster for small precision and is comparable for large precision; see [benchmark](https://github.com/jk-jeon/fp#about-the-name-dragonbox).
+`fp`'s implementation uses fewer amount of static data (about `39KB`) compared to the [reference implementation](https://github.com/ulfjack/ryu) (about `102KB`), yet, is faster for small precision and is comparable for large precision; see [benchmark](https://github.com/jk-jeon/fp#benchmark).
 
 ## Limited-precision decimal-to-binary conversion
 To be prepared.
