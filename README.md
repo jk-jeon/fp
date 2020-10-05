@@ -9,14 +9,17 @@ It aims to be a building block for higher-level libraries with high-performance 
 # Included Algorithms
 Here is the list of algorithms that `fp` supports (or will support in a future).
 
-## Dragonbox
-Shortest-roundtrip binary-to-decimal conversion algorithm. To be prepared.
+## Shortest-roundtrip binary-to-decimal conversion
+Dragonbox. To be prepared.
 
-## Ryu-printf
-Fixed-precision binary-to-decimal conversion algorithm. To be prepared.
+## Fixed-precision binary-to-decimal conversion
+`fp` implements Ulf Adams' [Ryu-printf](https://dl.acm.org/doi/pdf/10.1145/3360595) algorithm.
 
-## Dooly
-Decimal-to-binary conversion algorithm with limited/unlimited precisions. To be prepared.
+## Limited-precision decimal-to-binary conversion
+To be prepared.
+
+## Unlimited-precision decimal-to-binary conversion
+To be prepared.
 
 # Language Standard
 The library is targetting C++17 and actively using its features (e.g., if constexpr).
