@@ -14,3 +14,25 @@
 // Unless required by applicable law or agreed to in writing, this software
 // is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
 // KIND, either express or implied.
+
+#include "fixed_precision_benchmark.h"
+#define FMT_HEADER_ONLY 1
+#include "fmt/compile.h"
+
+namespace {
+	void float_to_chars(float x, char* buffer, int precision)
+	{
+		fmt::format_to(buffer, FMT_COMPILE("{:.{}e}"), x, precision);
+	}
+	void double_to_chars(double x, char* buffer, int precision)
+	{
+		fmt::format_to(buffer, FMT_COMPILE("{:.{}e}"), x, precision);
+	}
+
+	auto dummy = []() -> register_function_for_fixed_precision_benchmark {
+		return{ "fmt",
+			float_to_chars,
+			double_to_chars
+		};
+	}();
+}

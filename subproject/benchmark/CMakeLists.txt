@@ -17,6 +17,10 @@ if (NOT TARGET ryu)
     FetchContent_Declare(ryu SOURCE_DIR "${CMAKE_CURRENT_LIST_DIR}/../3rdparty/ryu")
     FetchContent_MakeAvailable(ryu)
 endif()
+if (NOT TARGET fmt)
+    FetchContent_Declare(fmt SOURCE_DIR "${CMAKE_CURRENT_LIST_DIR}/../3rdparty/fmt")
+    FetchContent_MakeAvailable(fmt)
+endif()
 
 # ---- Fixed-precision Benchmark ----
 
@@ -36,6 +40,7 @@ target_include_directories(fixed_precision_benchmark
 target_link_libraries(fixed_precision_benchmark
         PRIVATE
         ryu::ryu
+        fmt::fmt
         jkj_fp::common
         jkj_fp::charconv)
 
