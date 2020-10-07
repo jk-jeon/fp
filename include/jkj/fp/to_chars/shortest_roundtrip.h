@@ -28,7 +28,7 @@ namespace jkj::fp {
 
 	// Returns the next-to-end position.
 	template <class Float, class... Policies>
-	char* to_chars_n(Float x, char* buffer, Policies&&... policies)
+	char* to_chars_shortest_scientific_n(Float x, char* buffer, Policies&&... policies)
 	{
 		using namespace jkj::fp::detail::policy;
 		using policy_holder_t = decltype(make_policy_holder(
@@ -80,9 +80,9 @@ namespace jkj::fp {
 
 	// Null-terminates and bypass the return value of fp_to_chars_n.
 	template <class Float, class... Policies>
-	char* to_chars(Float x, char* buffer, Policies... policies)
+	char* to_chars_shortest_scientific(Float x, char* buffer, Policies... policies)
 	{
-		auto ptr = to_chars_n(x, buffer, policies...);
+		auto ptr = to_chars_shortest_scientific_n(x, buffer, policies...);
 		*ptr = '\0';
 		return ptr;
 	}
