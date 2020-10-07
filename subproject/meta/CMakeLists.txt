@@ -43,6 +43,8 @@ function(meta_exe NAME)
   endif()
 endfunction()
 
+meta_exe(to_chars_fixed_precision_live_test jkj_fp::charconv)
+meta_exe(to_chars_shortest_live_test jkj_fp::charconv)
 meta_exe(ryu_printf_generate_fast_cache jkj_fp::common)
 meta_exe(dragonbox_generate_cache jkj_fp::common)
 meta_exe(dragonbox_generate_compact_cache_error_table jkj_fp::common)
