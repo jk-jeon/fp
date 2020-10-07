@@ -74,7 +74,6 @@ auto generate_cache_impl()
 	using namespace jkj::fp::detail;
 	using ieee754_format_info = jkj::fp::ieee754_format_info<format>;
 	using cache_holder = ryu_printf::fast_cache_holder<format>;
-	using cache_entry_type = typename cache_holder::cache_entry_type;
 	using index_type = typename cache_holder::index_type;
 	constexpr auto cache_bits = cache_holder::cache_bits;
 

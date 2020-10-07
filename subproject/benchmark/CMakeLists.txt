@@ -17,6 +17,14 @@ if (NOT TARGET ryu)
     FetchContent_Declare(ryu SOURCE_DIR "${CMAKE_CURRENT_LIST_DIR}/../3rdparty/ryu")
     FetchContent_MakeAvailable(ryu)
 endif()
+if (NOT TARGET grisu_exact)
+    FetchContent_Declare(grisu_exact SOURCE_DIR "${CMAKE_CURRENT_LIST_DIR}/../3rdparty/grisu_exact")
+    FetchContent_MakeAvailable(grisu_exact)
+endif()
+if (NOT TARGET schubfach)
+    FetchContent_Declare(schubfach SOURCE_DIR "${CMAKE_CURRENT_LIST_DIR}/../3rdparty/schubfach")
+    FetchContent_MakeAvailable(schubfach)
+endif()
 if (NOT TARGET fmt)
     FetchContent_Declare(fmt SOURCE_DIR "${CMAKE_CURRENT_LIST_DIR}/../3rdparty/fmt")
     FetchContent_MakeAvailable(fmt)
@@ -44,7 +52,6 @@ target_link_libraries(fixed_precision_benchmark
         jkj_fp::common
         jkj_fp::charconv)
 
-# ---- MSVC Specifics ----
 if (MSVC)
     # No need to not generate PDB
     # /permissive- should be the default
@@ -56,5 +63,44 @@ if (MSVC)
               $<$<CONFIG:Release>:/GL>)
     target_link_options(fixed_precision_benchmark PUBLIC $<$<CONFIG:Release>:/LTCG> /DEBUG:FASTLINK)
     set_target_properties(fixed_precision_benchmark PROPERTIES 
+            VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}")
+endif()
+
+
+# ---- Shortest-roundtrip Benchmark ----
+
+add_executable(shortest_roundtrip_benchmark
+        include/shortest_roundtrip_benchmark.h
+        source/shortest_roundtrip_benchmark.cpp
+        source/fp_shortest_roundtrip.cpp
+        source/ryu_shortest_roundtrip.cpp
+        source/grisu_exact_shortest_roundtrip.cpp
+        source/schubfach_shortest_roundtrip.cpp)
+
+target_compile_features(shortest_roundtrip_benchmark PRIVATE cxx_std_17)
+
+target_include_directories(shortest_roundtrip_benchmark
+        PRIVATE
+        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>)
+
+target_link_libraries(shortest_roundtrip_benchmark
+        PRIVATE
+        ryu::ryu
+        grisu_exact::grisu_exact
+        schubfach::schubfach
+        jkj_fp::common
+        jkj_fp::charconv)
+
+if (MSVC)
+    # No need to not generate PDB
+    # /permissive- should be the default
+    # The compilation will fail without /experimental:newLambdaProcessor
+    # See also https://gitlab.kitware.com/cmake/cmake/-/issues/16478
+    target_compile_options(shortest_roundtrip_benchmark PUBLIC
+              /Zi /permissive-
+              $<$<NOT:$<CXX_COMPILER_ID:Clang>>:/experimental:newLambdaProcessor>
+              $<$<CONFIG:Release>:/GL>)
+    target_link_options(shortest_roundtrip_benchmark PUBLIC $<$<CONFIG:Release>:/LTCG> /DEBUG:FASTLINK)
+    set_target_properties(shortest_roundtrip_benchmark PROPERTIES 
             VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}")
 endif()

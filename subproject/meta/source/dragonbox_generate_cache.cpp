@@ -58,7 +58,6 @@ auto generate_cache_impl()
 	using namespace jkj::fp::detail;
 	using ieee754_format_info = jkj::fp::ieee754_format_info<format>;
 	using cache_holder = dragonbox::cache_holder<format>;
-	using cache_entry_type = typename cache_holder::cache_entry_type;
 	constexpr auto cache_bits = cache_holder::cache_bits;
 	constexpr auto significand_bits = ieee754_format_info::significand_bits;
 

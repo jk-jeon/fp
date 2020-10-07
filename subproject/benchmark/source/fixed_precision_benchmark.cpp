@@ -193,7 +193,7 @@ int main() {
 	constexpr int max_precision_double = 780;	// max_nonzero_decimal_digits = 767
 
 	if constexpr (benchmark_float) {
-		std::cout << "[Running benchmark for binary32...]\n";
+		std::cout << "[Running fixed-precision formatting benchmark for binary32...]\n";
 		benchmark_test<float>("binary32",
 			number_of_benchmark_samples_float,
 			duration_per_each_precision_in_sec_float,
@@ -201,7 +201,7 @@ int main() {
 		std::cout << "Done.\n\n\n";
 	}
 	if constexpr (benchmark_double) {
-		std::cout << "[Running benchmark for binary64...]\n";
+		std::cout << "[Running fixed-precision formatting benchmark for binary64...]\n";
 		benchmark_test<double>("binary64",
 			number_of_benchmark_samples_double,
 			duration_per_each_precision_in_sec_double,

@@ -469,3 +469,11 @@ MigrationBackup/
 /subproject/benchmark/results/fixed_precision_benchmark_binary32.csv
 /subproject/benchmark/results/fixed_precision_benchmark_binary64.pdf
 /subproject/benchmark/results/fixed_precision_benchmark_binary64.csv
+/subproject/benchmark/results/shortest_roundtrip_uniform_benchmark_binary64.pdf
+/subproject/benchmark/results/shortest_roundtrip_uniform_benchmark_binary64.csv
+/subproject/benchmark/results/shortest_roundtrip_uniform_benchmark_binary32.pdf
+/subproject/benchmark/results/shortest_roundtrip_uniform_benchmark_binary32.csv
+/subproject/benchmark/results/shortest_roundtrip_digits_benchmark_binary64.pdf
+/subproject/benchmark/results/shortest_roundtrip_digits_benchmark_binary64.csv
+/subproject/benchmark/results/shortest_roundtrip_digits_benchmark_binary32.pdf
+/subproject/benchmark/results/shortest_roundtrip_digits_benchmark_binary32.csv

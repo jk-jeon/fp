@@ -18,24 +18,27 @@
 #ifndef JKJ_HEADER_FP_TO_CHARS_COMMON
 #define JKJ_HEADER_FP_TO_CHARS_COMMON
 
-#include "../detail/util.h"
 #include "../detail/log.h"
+#include "../detail/util.h"
+#include "../detail/macros.h"
 
 namespace jkj::fp {
 	namespace detail {
 		extern char const radix_100_table[200];
 
 		template <int max_length, class UInt>
-		constexpr std::uint32_t decimal_length(UInt const x) noexcept {
+		JKJ_FORCEINLINE constexpr std::uint32_t decimal_length(UInt const x) noexcept {
 			static_assert(max_length > 0);
 			static_assert(max_length <= log::floor_log10_pow2(value_bits<UInt>));
-			assert(x < compute_power<max_length>(UInt(10)));
+			constexpr auto threshold = compute_power<max_length - 1>(UInt(10));
+			constexpr auto upper_bound = compute_power<max_length>(UInt(10));
+			assert(x < upper_bound);
 
 			if constexpr (max_length == 1) {
 				return 1;
 			}
 			else {
-				if (x >= compute_power<max_length - 1>(UInt(10))) {
+				if (x >= threshold) {
 					return max_length;
 				}
 				else {
