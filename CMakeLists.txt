@@ -53,7 +53,7 @@ set(jkj_fp_charconv_headers
         include/jkj/fp/to_chars/fixed_precision.h
         include/jkj/fp/to_chars/to_chars_common.h)
 
-set(jkj_fp_charconv_sources source/to_chars/shortest_roundtrip.cpp)
+set(jkj_fp_charconv_sources source/to_chars/to_chars.cpp)
 
 add_library(jkj_fp_charconv STATIC
         ${jkj_fp_charconv_headers}

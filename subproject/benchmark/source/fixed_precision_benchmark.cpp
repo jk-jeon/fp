@@ -184,12 +184,12 @@ static void benchmark_test(std::string_view float_name, std::size_t number_of_sa
 int main() {
 	constexpr bool benchmark_float = true;
 	constexpr std::size_t number_of_benchmark_samples_float = 1000000;
-	constexpr double duration_per_each_precision_in_sec_float = 0.2;
+	constexpr double duration_per_each_precision_in_sec_float = 0.1;
 	constexpr int max_precision_float = 120;	// max_nonzero_decimal_digits = 112
 
 	constexpr bool benchmark_double = true;
 	constexpr std::size_t number_of_benchmark_samples_double = 1000000;
-	constexpr double duration_per_each_precision_in_sec_double = 0.2;
+	constexpr double duration_per_each_precision_in_sec_double = 0.1;
 	constexpr int max_precision_double = 780;	// max_nonzero_decimal_digits = 767
 
 	if constexpr (benchmark_float) {

@@ -22,8 +22,8 @@
 
 namespace jkj::fp {
 	namespace detail {
-		char* to_chars(unsigned_fp_t<float> v, char* buffer);
-		char* to_chars(unsigned_fp_t<double> v, char* buffer);
+		char* to_chars_shortest_scientific_n_impl(unsigned_fp_t<float> v, char* buffer);
+		char* to_chars_shortest_scientific_n_impl(unsigned_fp_t<double> v, char* buffer);
 	}
 
 	// Returns the next-to-end position.
@@ -51,7 +51,7 @@ namespace jkj::fp {
 				++buffer;
 			}
 			if (br.is_nonzero()) {
-				return detail::to_chars(dragonbox(x,
+				return detail::to_chars_shortest_scientific_n_impl(dragonbox(x,
 					policy::sign::ignore,
 					std::forward<Policies>(policies)...),
 					buffer);
