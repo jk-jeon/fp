@@ -34,6 +34,7 @@ namespace jkj::fp {
 				static constexpr int cache_bits = 64;
 				static constexpr int min_k = -31;
 				static constexpr int max_k = 46;
+
 				static constexpr cache_entry_type cache[] = {
 					0x81ceb32c4b43fcf5,
 					0xa2425ff75e14fc32,
@@ -122,6 +123,7 @@ namespace jkj::fp {
 				static constexpr int cache_bits = 128;
 				static constexpr int min_k = -292;
 				static constexpr int max_k = 326;
+
 				static constexpr cache_entry_type cache[] = {
 					{ 0xff77b1fcbebcdc4f, 0x25e8e89c13bb0f7b },
 					{ 0x9faacf3df73609b1, 0x77b191618c54e9ad },

@@ -17,7 +17,6 @@
 
 #include "jkj/fp/ryu_printf.h"
 #include "jkj/fp/detail/util.h"
-#include "jkj/fp/detail/ryu_printf_cache.h"
 #include "cache_write_helper.h"
 #include "minmax_euclid.h"
 #include <iostream>
@@ -29,7 +28,7 @@
 
 template <jkj::fp::ieee754_format format, std::size_t array_size>
 struct generated_cache {
-	using cache_holder = jkj::fp::detail::ryu_printf::cache_holder<format>;
+	using cache_holder = jkj::fp::detail::ryu_printf::fast_cache_holder<format>;
 	using cache_entry_type = typename cache_holder::cache_entry_type;
 	using index_type = typename cache_holder::index_type;
 
@@ -41,6 +40,7 @@ struct generated_cache {
 
 template <class GeneratedCache>
 void write_to(std::ostream& out, GeneratedCache const& results) {
+	out << std::dec;
 	out << "static constexpr int min_n = " << results.min_n << ";\n";
 	out << "static constexpr int max_n = " << results.max_n << ";\n\n";
 	out << "static constexpr cache_entry_type cache[] = {\n\t";
@@ -73,7 +73,7 @@ auto generate_cache_impl()
 {
 	using namespace jkj::fp::detail;
 	using ieee754_format_info = jkj::fp::ieee754_format_info<format>;
-	using cache_holder = jkj::fp::detail::ryu_printf::cache_holder<format>;
+	using cache_holder = ryu_printf::fast_cache_holder<format>;
 	using cache_entry_type = typename cache_holder::cache_entry_type;
 	using index_type = typename cache_holder::index_type;
 	constexpr auto cache_bits = cache_holder::cache_bits;
@@ -291,16 +291,16 @@ int main()
 {
 	std::ofstream out;
 	bool success = true;
-	std::cout << "[Generating cache table...]\n";
+	std::cout << "[Generating cache table for Ryu-printf...]\n";
 
 	try {
 		std::cout << "\nGenerating cache table for IEEE-754 binary32 format...\n";
-		out.open("results/ryu_printf_binary32_cache.txt");
+		out.open("results/ryu_printf_binary32_fast_cache.txt");
 		write_to(out, generate_cache_impl<jkj::fp::ieee754_format::binary32>());
 		out.close();
 
 		std::cout << "\nGenerating cache table for IEEE-754 binary64 format...\n";
-		out.open("results/ryu_printf_binary64_cache.txt");
+		out.open("results/ryu_printf_binary64_fast_cache.txt");
 		write_to(out, generate_cache_impl<jkj::fp::ieee754_format::binary64>());
 		out.close();
 	}

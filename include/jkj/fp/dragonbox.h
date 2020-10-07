@@ -140,16 +140,10 @@ namespace jkj::fp {
 			// The main algorithm
 			////////////////////////////////////////////////////////////////////////////////////////
 
-			// Get sign/decimal significand/decimal exponent from
-			// the bit representation of a floating-point number
-			template <class Float>
-			struct impl : private ieee754_traits<Float>,
-				private ieee754_format_info<ieee754_traits<Float>::format>
+			// Some constants
+			template <ieee754_format format>
+			struct impl_base : private ieee754_format_info<format>
 			{
-				using carrier_uint = typename ieee754_traits<Float>::carrier_uint;
-
-				using ieee754_traits<Float>::format;
-				using ieee754_traits<Float>::carrier_bits;
 				using ieee754_format_info<format>::significand_bits;
 				using ieee754_format_info<format>::min_exponent;
 				using ieee754_format_info<format>::max_exponent;
@@ -158,7 +152,6 @@ namespace jkj::fp {
 
 				static constexpr int kappa = format == ieee754_format::binary32 ? 1 : 2;
 				static_assert(kappa >= 1);
-				static_assert(carrier_bits >= significand_bits + 2 + log::floor_log2_pow10(kappa + 1));
 
 				static constexpr int min_k = [] {
 					constexpr auto a = -log::floor_log10_pow2_minus_log10_4_over_3(
@@ -177,11 +170,31 @@ namespace jkj::fp {
 					return a > b ? a : b;
 				}();
 				static_assert(max_k <= cache_holder<format>::max_k);
+			};
 
-				using cache_entry_type =
-					typename cache_holder<format>::cache_entry_type;
-				static constexpr auto cache_bits =
-					cache_holder<format>::cache_bits;
+			// Get sign/decimal significand/decimal exponent from
+			// the bit representation of a floating-point number
+			template <class Float>
+			struct impl : private ieee754_traits<Float>,
+				private impl_base<ieee754_traits<Float>::format>
+			{
+				using carrier_uint = typename ieee754_traits<Float>::carrier_uint;
+				using ieee754_traits<Float>::format;
+				using ieee754_traits<Float>::carrier_bits;
+
+				using impl_base<format>::significand_bits;
+				using impl_base<format>::min_exponent;
+				using impl_base<format>::max_exponent;
+				using impl_base<format>::exponent_bias;
+				using impl_base<format>::decimal_digits;
+				using impl_base<format>::kappa;
+				using impl_base<format>::min_k;
+				using impl_base<format>::max_k;
+				
+				static_assert(carrier_bits >= significand_bits + 2 + log::floor_log2_pow10(kappa + 1));
+
+				using cache_entry_type = typename cache_holder<format>::cache_entry_type;
+				static constexpr auto cache_bits = cache_holder<format>::cache_bits;
 
 				static constexpr int max_power_of_factor_of_5 = log::floor_log5_pow2(int(significand_bits + 2));
 				static constexpr int divisibility_check_by_5_threshold =

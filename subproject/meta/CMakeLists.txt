@@ -43,5 +43,7 @@ function(meta_exe NAME)
   endif()
 endfunction()
 
-meta_exe(ryu_printf_generate_cache jkj_fp::common)
+meta_exe(ryu_printf_generate_fast_cache jkj_fp::common)
+meta_exe(dragonbox_generate_cache jkj_fp::common)
+meta_exe(dragonbox_generate_compact_cache_error_table jkj_fp::common)
 meta_exe(sandbox ryu fmt jkj_fp::charconv jkj_fp::common)

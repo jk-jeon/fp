@@ -21,7 +21,8 @@
 #include "ieee754_format.h"
 #include "detail/div.h"
 #include "detail/log.h"
-#include "detail/ryu_printf_cache.h"
+#include "detail/ryu_printf_compact_cache.h"
+#include "detail/ryu_printf_fast_cache.h"
 #include "detail/util.h"
 #include "detail/wuint.h"
 #include "detail/macros.h"
@@ -50,7 +51,7 @@ namespace jkj::fp {
 					format == ieee754_format::binary32 ? 11 : 46;
 
 				static constexpr int max_compression_factor =
-					cache_holder<format>::multiply_and_reduce_result_bits -
+					fast_cache_holder<format>::multiply_and_reduce_result_bits -
 					ieee754_format_info<format>::significand_bits - segment_bit_size;
 
 				static_assert(compression_factor <= max_compression_factor);
@@ -79,8 +80,8 @@ namespace jkj::fp {
 		using impl_base::exponent_bias;
 		using impl_base::segment_bit_size;
 		using impl_base::compression_factor;
-		using cache_holder = detail::ryu_printf::cache_holder<format>;
-		using cache_entry_type = typename cache_holder::cache_entry_type;
+		using fast_cache_holder = detail::ryu_printf::fast_cache_holder<format>;
+		using cache_entry_type = typename fast_cache_holder::cache_entry_type;
 
 		using carrier_uint = typename ieee754_traits<Float>::carrier_uint;
 		static constexpr auto carrier_bits = ieee754_traits<Float>::carrier_bits;
@@ -236,8 +237,8 @@ namespace jkj::fp {
 
 	private:
 		JKJ_FORCEINLINE std::uint32_t compute_segment() const noexcept {
-			auto const& cache = cache_holder::cache[exponent_index_ +
-				cache_holder::get_starting_index_minus_min_k(segment_index_)];
+			auto const& cache = fast_cache_holder::cache[exponent_index_ +
+				fast_cache_holder::get_starting_index_minus_min_k(segment_index_)];
 			return multiply_shift_mod(significand_, cache,
 				segment_bit_size + remainder_ - carrier_bits + significand_bits + 1);
 		}

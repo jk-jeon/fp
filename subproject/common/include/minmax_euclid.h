@@ -278,47 +278,47 @@ namespace jkj::fp {
 			auto pow2_over_g = pow2_mod_g.long_division(gp);
 
 			if (u <= b) {
-				// Try floor
-				if ((minmax_euclid_result.min >> std::size_t(b - u)) >= pow2_mod_g * N)
-				{
-					ret.resulting_number = pow2_over_g;
-					ret.round_direction = 0;
+				// Try ceiling
+				auto dividend = gp - minmax_euclid_result.max;
+				auto threshold = (gp - pow2_mod_g) * N;
+				auto test_number = (dividend >> std::size_t(b - u));
+				if (lower_bits_of(dividend, std::size_t(b - u)).is_zero()) {
+					++threshold;
+				}
+				if (test_number >= threshold) {
+					ret.resulting_number = pow2_over_g + 1;
+					ret.round_direction = 1;
 					return ret;
 				}
-				// Try ceiling
+				// Try floor
 				else {
-					auto dividend = gp - minmax_euclid_result.max;
-					auto threshold = (gp - pow2_mod_g) * N;
-					auto test_number = (dividend >> std::size_t(b - u));
-					if (lower_bits_of(dividend, std::size_t(b - u)).is_zero()) {
-						++threshold;
-					}
-					if (test_number >= threshold) {
-						ret.resulting_number = pow2_over_g + 1;
-						ret.round_direction = 1;
+					if ((minmax_euclid_result.min >> std::size_t(b - u)) >= pow2_mod_g * N)
+					{
+						ret.resulting_number = pow2_over_g;
+						ret.round_direction = 0;
 						return ret;
 					}
 				}
 			}
 			else {
-				// Try floor
-				auto dividend = pow2_mod_g * N;
-				auto threshold = minmax_euclid_result.min;
-				auto test_number = ((pow2_mod_g * N) >> std::size_t(u - b));
-				if (!lower_bits_of(dividend, std::size_t(u - b)).is_zero()) {
-					++test_number;
-				}
-				if (test_number <= threshold)
-				{
-					ret.resulting_number = pow2_over_g;
-					ret.round_direction = 0;
+				// Try ceiling
+				if ((((gp - pow2_mod_g) * N) >> std::size_t(u - b)) < gp - minmax_euclid_result.max) {
+					ret.resulting_number = pow2_over_g + 1;
+					ret.round_direction = 1;
 					return ret;
 				}
-				// Try ceiling
+				// Try floor
 				else {
-					if ((((gp - pow2_mod_g) * N) >> std::size_t(u - b)) < gp - minmax_euclid_result.max) {
-						ret.resulting_number = pow2_over_g + 1;
-						ret.round_direction = 1;
+					auto dividend = pow2_mod_g * N;
+					auto threshold = minmax_euclid_result.min;
+					auto test_number = ((pow2_mod_g * N) >> std::size_t(u - b));
+					if (!lower_bits_of(dividend, std::size_t(u - b)).is_zero()) {
+						++test_number;
+					}
+					if (test_number <= threshold)
+					{
+						ret.resulting_number = pow2_over_g;
+						ret.round_direction = 0;
 						return ret;
 					}
 				}
