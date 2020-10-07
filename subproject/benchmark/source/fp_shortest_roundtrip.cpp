@@ -56,7 +56,6 @@ namespace {
 			};
 		}
 		else {
-			static_assert(benchmark_kind == benchmark_allow_trailing_zero);
 			return { "fp (w/o trailing zero removal)",
 				float_to_chars_wo_tzremoval,
 				double_to_chars_wo_tzremoval

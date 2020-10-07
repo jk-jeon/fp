@@ -32,7 +32,6 @@ namespace {
 			return {};
 		}
 		else {
-			static_assert(benchmark_kind == benchmark_allow_trailing_zero);
 			return { "Schubfach",
 				float_to_chars,
 				double_to_chars
