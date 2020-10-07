@@ -15,7 +15,7 @@
 // is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
 // KIND, either express or implied.
 
-#include "dragonbox/dragonbox.h"
+#include "jkj/fp/dragonbox.h"
 
 #include <fstream>
 #include <iomanip>
@@ -24,9 +24,11 @@
 
 int main()
 {
-	using namespace jkj::dragonbox::detail;
+	using namespace jkj::fp::detail;
+	using dragonbox::impl;
+	using jkj::fp::policy::cache::fast;
 
-	std::cout << "[Generating error table for compressed cache...]\n";
+	std::cout << "[Generating error table for compressed cache for Dragonbox...]\n";
 
 	std::vector<std::uint32_t> results;
 
@@ -36,14 +38,13 @@ int main()
 	int error_count = 0;
 	for (int k = impl<double>::min_k; k <= impl<double>::max_k; ++k)
 	{
-		using jkj::dragonbox::policy::cache::normal;
-		auto real_cache = normal.get_cache<jkj::dragonbox::ieee754_format::binary64>(k);
+		auto real_cache = fast.get_cache<jkj::fp::ieee754_format::binary64>(k);
 
 		// Compute base index
 		int kb = ((k - impl<double>::min_k) / recov_size) * recov_size + impl<double>::min_k;
 
 		// Get base cache
-		auto base_cache = normal.get_cache<jkj::dragonbox::ieee754_format::binary64>(kb);
+		auto base_cache = fast.get_cache<jkj::fp::ieee754_format::binary64>(kb);
 
 		// Get index offset
 		auto offset = k - kb;
@@ -104,7 +105,7 @@ int main()
 	}
 
 	// Print out
-	std::ofstream out{ "results/binary64_compressed_cache_error_table.txt" };
+	std::ofstream out{ "results/dragonbox_binary64_compressed_cache_error_table.txt" };
 	out << "static constexpr std::uint32_t errors[] = {\n\t";
 	for (std::size_t i = 0; i < results.size(); ++i) {
 		if (i != 0) {
