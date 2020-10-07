@@ -699,14 +699,14 @@ namespace jkj::fp {
 
 						int s = 0;
 						for (; s < t - 1; s += 2) {
-							if (n * divtable.mod_inv[2] > divtable.max_quotients[2]) {
+							if (n * divtable[2].mod_inv > divtable[2].max_quotient) {
 								break;
 							}
-							n *= divtable.mod_inv[2];
+							n *= divtable[2].mod_inv;
 						}
-						if (s < t && n * divtable.mod_inv[1] <= divtable.max_quotients[1])
+						if (s < t && n * divtable[1].mod_inv <= divtable[1].max_quotient)
 						{
-							n *= divtable.mod_inv[1];
+							n *= divtable[1].mod_inv;
 							++s;
 						}
 						n >>= s;
