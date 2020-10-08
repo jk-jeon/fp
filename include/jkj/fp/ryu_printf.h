@@ -21,7 +21,6 @@
 #include "ieee754_format.h"
 #include "detail/div.h"
 #include "detail/log.h"
-#include "detail/ryu_printf_compact_cache.h"
 #include "detail/ryu_printf_fast_cache.h"
 #include "detail/util.h"
 #include "detail/wuint.h"
