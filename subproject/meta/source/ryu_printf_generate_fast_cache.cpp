@@ -83,7 +83,8 @@ auto generate_cache_impl()
 	constexpr auto segment_divisor = ryu_printf::impl_base<format>::segment_divisor;
 	constexpr auto compression_factor = ryu_printf::impl_base<format>::compression_factor;
 
-	constexpr auto min_e = ieee754_format_info::min_exponent - significand_bits;
+	// -1 for Dooly
+	constexpr auto min_e = ieee754_format_info::min_exponent - significand_bits - 1;
 	constexpr auto max_e = ieee754_format_info::max_exponent - significand_bits;
 
 	constexpr auto min_n = -int(

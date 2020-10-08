@@ -28,7 +28,6 @@ set(jkj_fp_headers
         include/jkj/fp/detail/dragonbox_cache.h
         include/jkj/fp/detail/log.h
         include/jkj/fp/detail/macros.h
-        include/jkj/fp/detail/ryu_printf_compact_cache.h
         include/jkj/fp/detail/ryu_printf_fast_cache.h
         include/jkj/fp/detail/undef_macros.h
         include/jkj/fp/detail/util.h

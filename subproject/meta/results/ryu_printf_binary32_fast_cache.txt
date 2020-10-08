@@ -101,6 +101,7 @@ static constexpr cache_entry_type cache[] = {
 	{ 0x2c6d3d97, 0xb9fcd000, 0x00000000 },
 	{ 0x947235cf, 0xe6800000, 0x00000000 },
 	{ 0x21fe4734, 0x00000000, 0x00000000 },
+	{ 0x145d2225, 0x57a51bf8, 0xc7373d9b },
 	{ 0xdc3bfabd, 0x28dfc639, 0xb9ecdec6 },
 	{ 0xbe4d7146, 0xfe31cdcf, 0x66f634e1 },
 	{ 0xa394e7f1, 0x8e6e7b37, 0xb1a70800 },
@@ -153,6 +154,6 @@ static constexpr cache_entry_type cache[] = {
 
 static constexpr index_type starting_index_minus_min_k[] = {
 	  -5,   -1,    6,   15,   27,   41,   48,   57,
-	  68,   79,   89,   98,  106,  114,  121,  127,
-	 132,  136,  140,  143,  145,  146
+	  68,   79,   89,   98,  107,  115,  122,  128,
+	 133,  137,  141,  144,  146,  147
 };
