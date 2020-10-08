@@ -140,6 +140,15 @@ namespace jkj::fp {
 		struct bit_reduction_return {
 			bigint_impl<array_size>	resulting_number;
 			std::uint8_t			round_direction;	// 0 means floor, 1 means ceiling
+
+			bool operator==(bit_reduction_return const& other) const {
+				return resulting_number == other.resulting_number &&
+					round_direction == round_direction;
+			}
+
+			bool operator!=(bit_reduction_return const& other) const {
+				return !(*this == other);
+			}
 		};
 
 		// Check if we have either
@@ -173,9 +182,9 @@ namespace jkj::fp {
 			}
 
 			auto divisor = bigint_t::power_of_2(std::size_t(b));
-			auto minmax_euclid_result = minmax_euclid(g, divisor, N);
-
 			auto lower_bits_of_g = lower_bits_of(g, std::size_t(l));
+
+			auto minmax_euclid_result = minmax_euclid(g - lower_bits_of_g, divisor, N);			
 
 			// Try floor
 			if (minmax_euclid_result.max + lower_bits_of_g * N < divisor)
