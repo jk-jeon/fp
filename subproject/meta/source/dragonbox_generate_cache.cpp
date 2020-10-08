@@ -120,8 +120,43 @@ auto generate_cache_impl()
 		update_minmax(e, k);
 	}
 
-	constexpr auto required_bits = std::size_t(2000);
+	// The maximum possible value of b when k >= 0
+	constexpr int max_b_posk = std::max(
+		// For Dragonbox
+		std::max(-kappa + log::floor_log10_pow5(-min_e),
+			log::floor_log10_pow2_minus_log10_4_over_3(min_e) - min_e),
+		// For Dooly
+		log::floor_log2_pow5(max_k) + 1);
+
+	// The maximum possible value of b when k < 0
+	constexpr int max_b_negk = std::max(
+		// For Dragonbox
+		std::max(kappa - log::floor_log10_pow5(-max_e + 1) + 1,
+			max_e - log::floor_log10_pow2_minus_log10_4_over_3(max_e)),
+		// For Dooly
+		-log::floor_log2_pow5(min_k) + ieee754_format_info::total_bits - 1);
+
+	// The minimum possible value of b when k < 0
+	constexpr int min_b_negk = std::min(
+		// For Dragonbox
+		std::min(kappa - log::floor_log10_pow5(-log::floor_log2_pow10(kappa + 1) + 1),
+			4 - log::floor_log10_pow2_minus_log10_4_over_3(4)),
+		// For Dooly
+		-log::floor_log2_pow5(1) - 1);
+
+	constexpr auto required_bits = std::max(
+		required_bits_for_multiplier_right_shift(
+			log::floor_log2_pow5(std::max(-min_k, max_k)), max_b_posk,
+			-cache_bits + 1, -cache_bits + log::floor_log2_pow5(std::max(-min_k, max_k)),
+			std::max(significand_bits + 1,
+				log::floor_log2_pow10(dooly::impl_base<format>::decimal_digit_limit))),
+		required_bits_for_reciprocal_left_shift(
+			log::floor_log2_pow5(std::max(-min_k, max_k)), min_b_negk, max_b_negk,
+			cache_bits - log::floor_log2_pow5(min_k) - 1,
+			std::max(significand_bits + 1,
+				log::floor_log2_pow10(dooly::impl_base<format>::decimal_digit_limit))));
 	using bigint_t = bigint<required_bits>;
+
 	constexpr auto max_f = (std::uint64_t(1) << (significand_bits + 1)) - 1;
 	constexpr auto max_significand_dooly =
 		compute_power<dooly::impl_base<format>::decimal_digit_limit>(std::uint64_t(10)) - 1;
@@ -135,8 +170,7 @@ auto generate_cache_impl()
 
 	using bit_reduction_return = jkj::fp::detail::bit_reduction_return<bigint_t::array_size>;
 
-	int k = 0;
-	for (; k <= std::max(-min_k, max_k); ++k) {
+	for (int k = 0; k <= std::max(-min_k, max_k); ++k) {
 		// For nonnegative k
 		if (k <= max_k) {
 			auto l = -cache_bits + log::floor_log2_pow5(k) + 1;
