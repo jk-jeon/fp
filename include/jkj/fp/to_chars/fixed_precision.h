@@ -20,7 +20,6 @@
 
 #include "../ryu_printf.h"
 #include "to_chars_common.h"
-#include "../detail/macros.h"
 #include <cassert>
 #include <cstdint>
 #include <cstring>	// std::memcpy, std::memset
@@ -692,5 +691,4 @@ namespace jkj::fp {
 	}
 }
 
-#include "../detail/undef_macros.h"
 #endif

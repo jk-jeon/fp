@@ -52,7 +52,8 @@ set(jkj_fp_charconv_headers
         ${jkj_fp_headers}
         include/jkj/fp/to_chars/fixed_precision.h
         include/jkj/fp/to_chars/shortest_roundtrip.h
-        include/jkj/fp/to_chars/to_chars_common.h)
+        include/jkj/fp/to_chars/to_chars_common.h
+        include/jkj/fp/from_chars/from_chars.h)
 
 set(jkj_fp_charconv_sources source/to_chars/to_chars.cpp)
 
@@ -110,13 +111,17 @@ install(FILES
 install(DIRECTORY include/jkj/fp/detail
         DESTINATION "${jkj_fp_include_directory}/jkj/fp")
 install(FILES   include/jkj/fp/decimal_fp.h
+                include/jkj/fp/dooly.h
                 include/jkj/fp/dragonbox.h
                 include/jkj/fp/ieee754_format.h
+                include/jkj/fp/policy.h
                 include/jkj/fp/ryu_printf.h
         DESTINATION "${jkj_fp_include_directory}/jkj/fp")
 
 if (JKJ_FP_INSTALL_CHARCONV)
-  install(FILES ${jkj_fp_charconv_headers}
+  install(DIRECTORY include/jkj/fp/from_chars
+          DESTINATION "${jkj_fp_include_directory}/jkj/fp")
+  install(DIRECTORY include/jkj/fp/to_chars
           DESTINATION "${jkj_fp_include_directory}/jkj/fp")
 endif()
 

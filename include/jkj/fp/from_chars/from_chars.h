@@ -15,31 +15,13 @@
 // is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
 // KIND, either express or implied.
 
-#include "jkj/fp/dooly.h"
-#include "ryu/ryu.h"
+#ifndef JKJ_HEADER_FP_FROM_CHARS_FROM_CHARS
+#define JKJ_HEADER_FP_FROM_CHARS_FROM_CHARS
 
-#include <chrono>
-#include <iostream>
-#include <iomanip>
-#include <string>
-#include <string_view>
-#include <stdexcept>
-#include <memory>
-#include <vector>
+#include "../dooly.h"
 
-int main()
-{
-	using namespace jkj::fp::detail;
+namespace jkj::fp {
 
-	while (true) {
-		int exponent, initial_segment;
-		std::cin >> exponent >> initial_segment;
-
-		jkj::fp::dooly_generator<double> gen{ exponent, initial_segment };
-
-		do {
-			std::cout << std::setw(9) << std::setfill('0') << gen.current_segment() << " ";
-		} while (gen.compute_next_segment());
-		std::cout << std::endl;
-	}
 }
+
+#endif

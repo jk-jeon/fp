@@ -170,7 +170,7 @@ namespace jkj::fp {
 				}
 			}
 
-			// Get first nonzero segment.
+			// Get the first nonzero segment.
 			segment_ = compute_segment();
 			while (segment_ == 0) {
 				++segment_index_;
