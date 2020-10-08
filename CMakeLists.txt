@@ -34,6 +34,7 @@ set(jkj_fp_headers
         include/jkj/fp/detail/util.h
         include/jkj/fp/detail/wuint.h
         include/jkj/fp/decimal_fp.h
+        include/jkj/fp/dooly.h
         include/jkj/fp/dragonbox.h
         include/jkj/fp/ieee754_format.h
         include/jkj/fp/policy.h
@@ -51,6 +52,7 @@ target_compile_features(jkj_fp INTERFACE cxx_std_17)
 set(jkj_fp_charconv_headers
         ${jkj_fp_headers}
         include/jkj/fp/to_chars/fixed_precision.h
+        include/jkj/fp/to_chars/shortest_roundtrip.h
         include/jkj/fp/to_chars/to_chars_common.h)
 
 set(jkj_fp_charconv_sources source/to_chars/to_chars.cpp)

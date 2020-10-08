@@ -19,6 +19,7 @@
 #define JKJ_HEADER_FP_IEEE754_FORMAT
 
 #include "detail/util.h"
+#include <cstdint>
 #include <cstring>
 
 namespace jkj::fp {
@@ -33,6 +34,7 @@ namespace jkj::fp {
 	template <>
 	struct ieee754_format_info<ieee754_format::binary32> {
 		static constexpr auto format = ieee754_format::binary32;
+		static constexpr int total_bits = 32;
 		static constexpr int significand_bits = 23;
 		static constexpr int exponent_bits = 8;
 		static constexpr int min_exponent = -126;
@@ -44,6 +46,7 @@ namespace jkj::fp {
 	template <>
 	struct ieee754_format_info<ieee754_format::binary64> {
 		static constexpr auto format = ieee754_format::binary64;
+		static constexpr int total_bits = 64;
 		static constexpr int significand_bits = 52;
 		static constexpr int exponent_bits = 11;
 		static constexpr int min_exponent = -1022;

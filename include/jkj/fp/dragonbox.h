@@ -227,7 +227,7 @@ namespace jkj::fp {
 
 				template <class ReturnType, class IntervalTypeProvider, class SignPolicy,
 					class TrailingZeroPolicy, class DecimalRoundingPolicy, class CachePolicy>
-					JKJ_SAFEBUFFERS static ReturnType compute_nearest(ieee754_bits<Float> const br) noexcept
+				JKJ_SAFEBUFFERS static ReturnType compute_nearest(ieee754_bits<Float> const br) noexcept
 				{
 					//////////////////////////////////////////////////////////////////////
 					// Step 1: integer promotion & Schubfach multiplier calculation
@@ -235,7 +235,7 @@ namespace jkj::fp {
 
 					ReturnType ret_value;
 
-					SignPolicy::handle_sign(br, ret_value);
+					SignPolicy::binary_to_decimal(br, ret_value);
 
 					auto significand = br.extract_significand_bits();
 					auto exponent = int(br.extract_exponent_bits());
@@ -947,11 +947,13 @@ namespace jkj::fp {
 	////////////////////////////////////////////////////////////////////////////////////////
 
 	template <class Float, class... Policies>
-	JKJ_SAFEBUFFERS JKJ_FORCEINLINE auto dragonbox(Float x, Policies&&... policies)
+	JKJ_SAFEBUFFERS JKJ_FORCEINLINE auto to_shortest_decimal(Float x, Policies&&... policies)
 	{
 		// Build policy holder type
 		using namespace policy;
-		using namespace detail::policy;
+		using detail::policy::make_policy_holder;
+		using detail::policy::make_default_list;
+		using detail::policy::make_default;
 		auto policy_holder = make_policy_holder(
 			make_default_list(
 				make_default<policy_kind::sign>(sign::propagate),
@@ -964,7 +966,7 @@ namespace jkj::fp {
 
 		using policy_holder_t = decltype(policy_holder);
 
-		using return_type = decimla_fp<Float,
+		using return_type = decimal_fp<Float,
 			decltype(policy_holder)::return_has_sign,
 			decltype(policy_holder)::report_trailing_zeros>;
 
@@ -973,7 +975,7 @@ namespace jkj::fp {
 
 		return policy_holder.delegate(br,
 			[br](auto interval_type_provider) {
-				using detail::dragonbox::policy::binary_rounding::tag_t;
+				using detail::policy::binary_rounding::tag_t;
 				constexpr tag_t tag = decltype(interval_type_provider)::tag;
 
 				if constexpr (tag == tag_t::to_nearest) {

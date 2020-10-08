@@ -172,7 +172,7 @@ namespace jkj::fp {
 
 					// Discard if a shorter representation exists
 					// We don't need to care about sign and correct rounding here
-					auto roundtrip = jkj::fp::dragonbox(result,
+					auto roundtrip = jkj::fp::to_shortest_decimal(result,
 						jkj::fp::policy::sign::ignore,
 						jkj::fp::policy::binary_rounding::nearest_to_even,
 						jkj::fp::policy::decimal_rounding::do_not_care);

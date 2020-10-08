@@ -51,7 +51,7 @@ namespace jkj::fp {
 				++buffer;
 			}
 			if (br.is_nonzero()) {
-				return detail::to_chars_shortest_scientific_n_impl(dragonbox(x,
+				return detail::to_chars_shortest_scientific_n_impl(to_shortest_decimal(x,
 					policy::sign::ignore,
 					std::forward<Policies>(policies)...),
 					buffer);

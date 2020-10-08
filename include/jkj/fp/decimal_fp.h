@@ -23,21 +23,23 @@
 
 namespace jkj::fp {
 	template <class Float, bool is_signed, bool trailing_zero_flag>
-	struct decimla_fp;
+	struct decimal_fp;
 
 	template <class Float>
-	struct decimla_fp<Float, false, false> {
+	struct decimal_fp<Float, false, false> {
 		using float_type = Float;
 		using carrier_uint = typename ieee754_traits<Float>::carrier_uint;
+		static constexpr bool is_signed = false;
 
 		carrier_uint	significand;
 		int				exponent;
 	};
 
 	template <class Float>
-	struct decimla_fp<Float, true, false> {
+	struct decimal_fp<Float, true, false> {
 		using float_type = Float;
 		using carrier_uint = typename ieee754_traits<Float>::carrier_uint;
+		static constexpr bool is_signed = true;
 
 		carrier_uint	significand;
 		int				exponent;
@@ -45,9 +47,10 @@ namespace jkj::fp {
 	};
 
 	template <class Float>
-	struct decimla_fp<Float, false, true> {
+	struct decimal_fp<Float, false, true> {
 		using float_type = Float;
 		using carrier_uint = typename ieee754_traits<Float>::carrier_uint;
+		static constexpr bool is_signed = false;
 
 		carrier_uint	significand;
 		int				exponent;
@@ -55,9 +58,10 @@ namespace jkj::fp {
 	};
 
 	template <class Float>
-	struct decimla_fp<Float, true, true> {
+	struct decimal_fp<Float, true, true> {
 		using float_type = Float;
 		using carrier_uint = typename ieee754_traits<Float>::carrier_uint;
+		static constexpr bool is_signed = true;
 
 		carrier_uint	significand;
 		int				exponent;
@@ -66,10 +70,10 @@ namespace jkj::fp {
 	};
 
 	template <class Float>
-	using unsigned_fp_t = decimla_fp<Float, false, false>;
+	using unsigned_fp_t = decimal_fp<Float, false, false>;
 
 	template <class Float>
-	using signed_fp_t = decimla_fp<Float, true, false>;
+	using signed_fp_t = decimal_fp<Float, true, false>;
 }
 
 #endif

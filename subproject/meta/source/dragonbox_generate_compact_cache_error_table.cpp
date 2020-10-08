@@ -25,7 +25,7 @@
 int main()
 {
 	using namespace jkj::fp::detail;
-	using dragonbox::impl;
+	using fast_cache_holder = dragonbox::cache_holder<jkj::fp::ieee754_format::binary64>;
 	using jkj::fp::policy::cache::fast;
 
 	std::cout << "[Generating error table for compressed cache for Dragonbox...]\n";
@@ -36,12 +36,12 @@ int main()
 
 	std::uint32_t error = 0;
 	int error_count = 0;
-	for (int k = impl<double>::min_k; k <= impl<double>::max_k; ++k)
+	for (int k = fast_cache_holder::min_k; k <= fast_cache_holder::max_k; ++k)
 	{
 		auto real_cache = fast.get_cache<jkj::fp::ieee754_format::binary64>(k);
 
 		// Compute base index
-		int kb = ((k - impl<double>::min_k) / recov_size) * recov_size + impl<double>::min_k;
+		int kb = ((k - fast_cache_holder::min_k) / recov_size) * recov_size + fast_cache_holder::min_k;
 
 		// Get base cache
 		auto base_cache = fast.get_cache<jkj::fp::ieee754_format::binary64>(kb);

@@ -16,30 +16,34 @@
 // KIND, either express or implied.
 
 #include "jkj/fp/dooly.h"
-#include "ryu/ryu.h"
 
-#include <chrono>
 #include <iostream>
 #include <iomanip>
 #include <string>
-#include <string_view>
-#include <stdexcept>
-#include <memory>
-#include <vector>
+
+template <class Float>
+static void live_test()
+{
+	char buffer[41];
+
+	while (true) {
+		// TODO
+	}
+}
 
 int main()
 {
-	using namespace jkj::fp::detail;
+	constexpr enum {
+		test_float,
+		test_double
+	} test = test_double;
 
-	while (true) {
-		std::uint32_t significand;
-		int exponent;
-
-		std::cin >> significand >> exponent;
-		jkj::fp::unsigned_fp_t<float> x{ significand, exponent };
-
-		char buffer[41];
-		f2s_buffered(jkj::fp::to_binary(x).to_float(), buffer);
-		std::cout << buffer << std::endl;
+	if constexpr (test == test_float) {
+		std::cout << "[Start limited-precision parsing live test for binary32]\n";
+		live_test<float>();
+	}
+	else if constexpr (test == test_double) {
+		std::cout << "[Start limited-precision parsing live test for binary64]\n";
+		live_test<double>();
 	}
 }

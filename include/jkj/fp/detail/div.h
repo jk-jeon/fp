@@ -21,6 +21,7 @@
 #include "bits.h"
 #include "util.h"
 #include <cassert>
+#include <cstdint>
 
 namespace jkj::fp {
 	namespace detail {
@@ -84,9 +85,26 @@ namespace jkj::fp {
 				}();
 			};
 
+			// Prevent needless duplication of tables
+			template <class UInt, UInt a>
+			struct default_table_size {
+				static constexpr int value = 0;
+			};
+			template <>
+			struct default_table_size<std::uint32_t, 5> {
+				static constexpr int value = 13;
+			};
+			template <>
+			struct default_table_size<std::uint64_t, 5> {
+				static constexpr int value = 24;
+			};
+
 			template <std::size_t table_size, class UInt>
 			constexpr bool divisible_by_power_of_5(UInt x, unsigned int exp) noexcept {
-				auto const& table = table_holder<UInt, 5, table_size>::table;
+				auto const& table = table_holder<UInt, 5,
+					table_size < default_table_size<UInt, 5>::value ?
+					default_table_size<UInt, 5>::value : table_size>::table;
+
 				assert(exp < (unsigned int)(table.size));
 				return x * table[exp].mod_inv <= table[exp].max_quotient;
 			}
