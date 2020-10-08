@@ -20,6 +20,7 @@
 
 #include "decimal_fp.h"
 #include "dragonbox.h"
+#include "ryu_printf.h"
 #include "policy.h"
 #include "detail/bits.h"
 #include "detail/div.h"
@@ -27,6 +28,10 @@
 #include "detail/util.h"
 
 namespace jkj::fp {
+	template <ieee754_format format>
+	static constexpr int to_binary_limited_precision_digit_limit =
+		format == ieee754_format::binary32 ? 9 : 17;
+
 	namespace detail {
 		namespace dooly {
 			// Some constants
@@ -39,7 +44,7 @@ namespace jkj::fp {
 				using ieee754_format_info<format>::exponent_bias;
 
 				static constexpr int decimal_digit_limit =
-					format == ieee754_format::binary32 ? 9 : 17;
+					to_binary_limited_precision_digit_limit<format>;
 
 				static constexpr int min_k =
 					log::floor_log10_pow2(min_exponent - significand_bits)
@@ -293,7 +298,7 @@ namespace jkj::fp {
 	}
 
 	template <class Float, bool is_signed>
-	ieee754_bits<Float> to_binary(decimal_fp<Float, is_signed, false> decimal)
+	ieee754_bits<Float> to_binary_limited_precision(decimal_fp<Float, is_signed, false> decimal)
 	{
 		// TODO: implement policies
 		return detail::dooly::impl<Float>::template compute<

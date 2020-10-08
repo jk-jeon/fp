@@ -68,7 +68,7 @@ int main()
 				ieee754_bits x{ u };
 				if (x.is_nonzero() && x.is_finite()) {
 					auto dec = jkj::fp::to_shortest_decimal(x.to_float());
-					auto roundtrip = jkj::fp::to_binary(dec);
+					auto roundtrip = jkj::fp::to_binary_limited_precision(dec);
 
 					if (roundtrip.u != u) {
 						failure_cases.push_back({ x, roundtrip });

@@ -39,7 +39,7 @@ int main()
 		jkj::fp::unsigned_fp_t<float> x{ significand, exponent };
 
 		char buffer[41];
-		f2s_buffered(jkj::fp::to_binary(x).to_float(), buffer);
+		f2s_buffered(jkj::fp::to_binary_limited_precision(x).to_float(), buffer);
 		std::cout << buffer << std::endl;
 	}
 }

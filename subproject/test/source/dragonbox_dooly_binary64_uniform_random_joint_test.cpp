@@ -30,7 +30,7 @@ static bool uniform_random_test(std::size_t number_of_tests, TypenameString&& ty
 	for (std::size_t test_idx = 0; test_idx < number_of_tests; ++test_idx) {
 		auto x = jkj::fp::detail::uniformly_randomly_generate_finite_float<Float>(rg);
 		auto dec = jkj::fp::to_shortest_decimal(x);
-		auto roundtrip = jkj::fp::to_binary(dec);
+		auto roundtrip = jkj::fp::to_binary_limited_precision(dec);
 
 		if (x != roundtrip.to_float()) {
 			char buffer1[64];
