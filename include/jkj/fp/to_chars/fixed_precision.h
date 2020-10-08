@@ -25,16 +25,13 @@
 #include <cstring>	// std::memcpy, std::memset
 
 namespace jkj::fp {
-	namespace detail {
-		
-	}
-
 	// Fixed-precision formatting in fixed-point form
 	// precision means the number of digits after the decimal point.
-	template <class Float>
+	// TODO
+	/*template <class Float>
 	void to_chars_fixed_precision_fixed_point(Float x, char* buffer, int precision) noexcept {
 		assert(precision >= 0);
-	}
+	}*/
 
 	// Fixed-precision formatting in scientific form
 	// precision means the number of significand digits excluding the first digit.
