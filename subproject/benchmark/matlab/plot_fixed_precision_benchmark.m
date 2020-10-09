@@ -39,7 +39,7 @@ end
 color_array = {[.8 .06 .1],[.1 .7 .06],[.06 .1 .8],[.6 .2 .8],[.8 .9 0],[.5 .6 .7],[.8 .2 .6]};
 
 % plot
-fig = figure('Color','w');
+fig = figure('Color','w','DefaultLegendInterpreter','none');
 fig_handles = zeros(number_of_algorithms,1);
 hold on
 for algorithm_idx=1:number_of_algorithms

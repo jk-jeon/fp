@@ -17,7 +17,7 @@
 
 #include "from_chars_unlimited_precision_benchmark.h"
 #include "random_float.h"
-#include "jkj/fp/to_chars/shortest_precise.h"
+#include "jkj/fp/to_chars/fixed_precision.h"
 #include <chrono>
 #include <cstring>
 #include <fstream>
@@ -39,55 +39,65 @@ public:
 	}
 
 	// Generate random samples
-	void prepare_samples(std::size_t number_of_samples)
+	void prepare_samples(std::size_t number_of_samples, int max_precision)
 	{
+		assert(max_precision >= 0);
 		auto buffer = std::make_unique<char[]>(10000);
-		samples_.resize(number_of_samples);
-		for (auto& sample : samples_) {
-			auto x = jkj::fp::detail::uniformly_randomly_generate_general_float<Float>(rg_);
-			sample.assign(buffer.get(), jkj::fp::to_chars_precise_scientific_n(x, buffer.get()));
-		}
-	}
-
-	// { "name" : measured_time }
-	using output_type = std::unordered_map<std::string, double>;
-	void run(double duration, std::string_view float_name, output_type& out)
-	{
-		auto dur = std::chrono::duration<double>{ duration };
-
-		for (auto const& name_func_pair : name_func_pairs_) {
-			std::cout << "Benchmarking " << name_func_pair.first << "...\n";
-
-			auto& measured_time = out[name_func_pair.first];
-
-			std::size_t iterations = 0;
-			std::size_t sample_idx = 0;
-			auto from = std::chrono::steady_clock::now();
-			auto to = from + dur;
-			auto now = std::chrono::steady_clock::now();
-
-			while (now <= to) {
-				name_func_pair.second(samples_[sample_idx]);
-
-				if (++sample_idx == samples_.size()) {
-					sample_idx = 0;
-				}
-				++iterations;
-				now = std::chrono::steady_clock::now();
+		samples_.resize(max_precision + 1);
+		for (int precision = 0; precision <= max_precision; ++precision) {
+			samples_[precision].resize(number_of_samples);
+			for (auto& sample : samples_[precision]) {
+				auto x = jkj::fp::detail::uniformly_randomly_generate_finite_float<Float>(rg_);
+				sample.assign(buffer.get(),
+					jkj::fp::to_chars_fixed_precision_scientific_n(x, buffer.get(), precision));
 			}
-
-			measured_time =
-				double(std::chrono::duration_cast<std::chrono::nanoseconds>(now - from).count())
-				/ iterations;
-
-			std::cout << "Average time per iteration: " << measured_time << "ns\n";
 		}
 	}
 
-	output_type run(double duration, std::string_view float_name)
+	// { "name" : [measured_time_for_each_precision] }
+	using output_type = std::unordered_map<std::string, std::vector<double>>;
+	void run(double duration_per_each_precision_in_sec,
+		std::string_view float_name, output_type& out)
+	{
+		auto dur = std::chrono::duration<double>{ duration_per_each_precision_in_sec };
+
+		for (int precision = 0; precision < samples_.size(); ++precision) {
+			std::cout << "Benchmark for precision = " << precision <<
+				" with uniformly random " << float_name << "'s...\n";
+
+			for (auto const& name_func_pair : name_func_pairs_) {
+				auto& measured_times = out[name_func_pair.first];
+				if (measured_times.empty()) {
+					measured_times.resize(samples_.size());
+				}
+
+				std::size_t iterations = 0;
+				std::size_t sample_idx = 0;
+				auto from = std::chrono::steady_clock::now();
+				auto to = from + dur;
+				auto now = std::chrono::steady_clock::now();
+
+				while (now <= to) {
+					name_func_pair.second(samples_[precision][sample_idx]);
+
+					if (++sample_idx == samples_[precision].size()) {
+						sample_idx = 0;
+					}
+					++iterations;
+					now = std::chrono::steady_clock::now();
+				}
+
+				measured_times[precision] =
+					double(std::chrono::duration_cast<std::chrono::nanoseconds>(now - from).count())
+					/ iterations;
+			}
+		}
+	}
+
+	output_type run(double duration_per_each_precision_in_sec, std::string_view float_name)
 	{
 		output_type out;
-		run(duration, float_name, out);
+		run(duration_per_each_precision_in_sec, float_name, out);
 		return out;
 	}
 
@@ -99,8 +109,8 @@ public:
 private:
 	benchmark_holder() : rg_(jkj::fp::detail::generate_correctly_seeded_mt19937_64()) {}
 
-	// Digits samples for [1] ~ [max_digits], general samples for [0]
-	std::vector<std::string> samples_;
+	// Precision, and then sample idx
+	std::vector<std::vector<std::string>> samples_;
 	std::mt19937_64 rg_;
 	std::unordered_map<std::string, Float(*)(std::string const&)> name_func_pairs_;
 };
@@ -128,39 +138,73 @@ register_function_for_from_chars_unlimited_precision_benchmark::register_functio
 	benchmark_holder<double>::get_instance().register_function(name, func_double);
 };
 
+#define RUN_MATLAB
+#ifdef RUN_MATLAB
+#include <cstdlib>
+
+void run_matlab() {
+	std::system("matlab -nosplash -r \"cd('matlab');"
+		"plot_fixed_precision_benchmark(\'../results/from_chars_unlimited_precision_benchmark_binary32.csv\');"
+		"plot_fixed_precision_benchmark(\'../results/from_chars_unlimited_precision_benchmark_binary64.csv\');\"");
+}
+#endif
+
 template <class Float>
-static void benchmark_test(std::string_view float_name,
-	std::size_t number_of_samples, double duration)
+static void benchmark_test(std::string_view float_name, std::size_t number_of_samples,
+	double duration_per_each_precision_in_sec, int max_precision)
 {
 	auto& inst = benchmark_holder<Float>::get_instance();
 	std::cout << "Generating random samples...\n";
-	inst.prepare_samples(number_of_samples);
-	auto out = inst.run(duration, float_name);
+	inst.prepare_samples(number_of_samples, max_precision);
+	auto out = inst.run(duration_per_each_precision_in_sec, float_name);
 
-	std::cout << "Benchmarking done.\n";
+	std::cout << "Benchmarking done.\n" << "Now writing to files...\n";
+
+	// Write benchmark results
+	auto filename = std::string("results/from_chars_unlimited_precision_benchmark_");
+	filename += float_name;
+	filename += ".csv";
+	std::ofstream out_file{ filename };
+	out_file << "number_of_samples," << number_of_samples << std::endl;;
+	out_file << "name,precision,time\n";
+
+	for (auto const& name_result_pair : out) {
+		for (int precision = 0; precision <= max_precision; ++precision) {
+			out_file << "\"" << name_result_pair.first << "\","
+				<< precision << "," << name_result_pair.second[precision] << "\n";
+		}
+	}
 }
 
 int main() {
 	constexpr bool benchmark_float = true;
-	constexpr std::size_t number_of_benchmark_samples_float = 1000000;
-	constexpr double duration_in_sec_float = 5;
+	constexpr std::size_t number_of_benchmark_samples_float = 10000;
+	constexpr double duration_per_each_precision_in_sec_float = 0.1;
+	constexpr int max_precision_float = 120;	// max_nonzero_decimal_digits = 112
 
 	constexpr bool benchmark_double = true;
-	constexpr std::size_t number_of_benchmark_samples_double = 1000000;
-	constexpr double duration_in_sec_double = 5;
+	constexpr std::size_t number_of_benchmark_samples_double = 10000;
+	constexpr double duration_per_each_precision_in_sec_double = 0.1;
+	constexpr int max_precision_double = 780;	// max_nonzero_decimal_digits = 767
 
 	if constexpr (benchmark_float) {
 		std::cout << "[Running unlimited-precision parsing benchmark for binary32...]\n";
 		benchmark_test<float>("binary32",
 			number_of_benchmark_samples_float,
-			duration_in_sec_float);
+			duration_per_each_precision_in_sec_float,
+			max_precision_float);
 		std::cout << "Done.\n\n\n";
 	}
 	if constexpr (benchmark_double) {
 		std::cout << "[Running unlimited-precision parsing  benchmark for binary64...]\n";
 		benchmark_test<double>("binary64",
 			number_of_benchmark_samples_double,
-			duration_in_sec_double);
+			duration_per_each_precision_in_sec_double,
+			max_precision_double);
 		std::cout << "Done.\n\n\n";
 	}
+
+#ifdef RUN_MATLAB
+	run_matlab();
+#endif
 }

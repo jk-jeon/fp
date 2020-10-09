@@ -20,12 +20,24 @@
 namespace {
 	float float_from_chars(std::string const& str)
 	{
-		return std::stof(str);
+		// Ignore out_of_range error
+		try {
+			return std::stof(str);
+		}
+		catch (...) {
+			return 0;
+		}
 
 	}
 	double double_from_chars(std::string const& str)
 	{
-		return std::stod(str);
+		// Ignore out_of_range error
+		try {
+			return std::stod(str);
+		}
+		catch (...) {
+			return 0;
+		}
 	}
 
 	auto dummy = []() -> register_function_for_from_chars_unlimited_precision_benchmark {

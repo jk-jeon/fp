@@ -458,6 +458,10 @@ MigrationBackup/
 
 # End of https://www.toptal.com/developers/gitignore/api/clion+all,visualstudio
 /subproject/benchmark/results/from_chars_limited_precision_benchmark_binary32.csv
-/subproject/benchmark/results/from_chars_limited_precision_benchmark_binary64.csv
 /subproject/benchmark/results/from_chars_limited_precision_benchmark_binary32.pdf
+/subproject/benchmark/results/from_chars_limited_precision_benchmark_binary64.csv
 /subproject/benchmark/results/from_chars_limited_precision_benchmark_binary64.pdf
+/subproject/benchmark/results/from_chars_unlimited_precision_benchmark_binary32.pdf
+/subproject/benchmark/results/from_chars_unlimited_precision_benchmark_binary32.csv
+/subproject/benchmark/results/from_chars_unlimited_precision_benchmark_binary64.pdf
+/subproject/benchmark/results/from_chars_unlimited_precision_benchmark_binary64.csv

@@ -42,7 +42,7 @@ public:
 	{
 		samples_.resize(number_of_samples);
 		for (auto& sample : samples_) {
-			sample = jkj::fp::detail::uniformly_randomly_generate_general_float<Float>(rg_);
+			sample = jkj::fp::detail::uniformly_randomly_generate_finite_float<Float>(rg_);
 		}
 	}
 
@@ -139,8 +139,8 @@ register_function_for_to_chars_fixed_precision_benchmark::register_function_for_
 
 void run_matlab() {
 	std::system("matlab -nosplash -r \"cd('matlab');"
-		"plot_to_chars_fixed_precision_benchmark(\'../results/to_chars_fixed_precision_benchmark_binary32.csv\');"
-		"plot_to_chars_fixed_precision_benchmark(\'../results/to_chars_fixed_precision_benchmark_binary64.csv\');\"");
+		"plot_fixed_precision_benchmark(\'../results/to_chars_fixed_precision_benchmark_binary32.csv\');"
+		"plot_fixed_precision_benchmark(\'../results/to_chars_fixed_precision_benchmark_binary64.csv\');\"");
 }
 #endif
 
