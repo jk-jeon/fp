@@ -15,7 +15,7 @@
 // is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
 // KIND, either express or implied.
 
-#include "shortest_roundtrip_benchmark.h"
+#include "to_chars_shortest_roundtrip_benchmark.h"
 #include "fp_to_chars.h"
 
 namespace {
@@ -32,7 +32,7 @@ namespace {
 			jkj::grisu_exact_correct_rounding::tie_to_even{});
 	}
 
-	auto dummy = []() -> register_function_for_shortest_roundtrip_benchmark {
+	auto dummy = []() -> register_function_for_to_chars_shortest_roundtrip_benchmark {
 		if constexpr (benchmark_kind == benchmark_no_trailing_zero) {
 			return { "Grisu-Exact",
 				float_to_chars,

@@ -15,7 +15,7 @@
 // is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
 // KIND, either express or implied.
 
-#include "fixed_precision_benchmark.h"
+#include "to_chars_fixed_precision_benchmark.h"
 #include "random_float.h"
 #include <chrono>
 #include <cstring>
@@ -110,21 +110,21 @@ private:
 	std::unordered_map<std::string, void(*)(Float, char*, int)> name_func_pairs_;
 };
 
-register_function_for_fixed_precision_benchmark::register_function_for_fixed_precision_benchmark(
+register_function_for_to_chars_fixed_precision_benchmark::register_function_for_to_chars_fixed_precision_benchmark(
 	std::string_view name,
 	void(*func_float)(float, char*, int))
 {
 	benchmark_holder<float>::get_instance().register_function(name, func_float);
 };
 
-register_function_for_fixed_precision_benchmark::register_function_for_fixed_precision_benchmark(
+register_function_for_to_chars_fixed_precision_benchmark::register_function_for_to_chars_fixed_precision_benchmark(
 	std::string_view name,
 	void(*func_double)(double, char*, int))
 {
 	benchmark_holder<double>::get_instance().register_function(name, func_double);
 };
 
-register_function_for_fixed_precision_benchmark::register_function_for_fixed_precision_benchmark(
+register_function_for_to_chars_fixed_precision_benchmark::register_function_for_to_chars_fixed_precision_benchmark(
 	std::string_view name,
 	void(*func_float)(float, char*, int),
 	void(*func_double)(double, char*, int))

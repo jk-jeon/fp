@@ -7,6 +7,7 @@ add_library(ryu STATIC
         ryu/f2s_intrinsics.h ryu/f2s_full_table.h
         ryu/d2s_intrinsics.h ryu/d2s_full_table.h
         ryu/d2fixed.c ryu/d2fixed_full_table.h
+        ryu/ryu_parse.h ryu/s2d.c ryu/s2f.c
         ryu/digit_table.h)
 add_library(ryu::ryu ALIAS ryu)
 

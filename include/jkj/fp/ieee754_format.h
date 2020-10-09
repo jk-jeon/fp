@@ -83,6 +83,27 @@ namespace jkj::fp {
 			return u;
 		}
 
+		static constexpr carrier_uint positive_zero() noexcept {
+			return 0;
+		}
+
+		static constexpr carrier_uint negative_zero() noexcept {
+			return carrier_uint(carrier_uint(1) << (carrier_bits - 1));
+		}
+
+		static constexpr carrier_uint positive_infinity() noexcept {
+			constexpr int significand_bits = ieee754_format_info<format>::significand_bits;
+			constexpr int exponent_bits = ieee754_format_info<format>::exponent_bits;
+			return carrier_uint((carrier_uint((carrier_uint(1) << exponent_bits) - 1)) << significand_bits);
+		}
+
+		static constexpr carrier_uint negative_infinity() noexcept {
+			constexpr int significand_bits = ieee754_format_info<format>::significand_bits;
+			constexpr int exponent_bits = ieee754_format_info<format>::exponent_bits;
+			return carrier_uint((carrier_uint((carrier_uint(1) << exponent_bits) - 1)) << significand_bits)
+				| (carrier_uint(1) << (carrier_bits - 1));
+		}
+
 		static constexpr unsigned int extract_exponent_bits(carrier_uint u) noexcept {
 			constexpr int significand_bits = ieee754_format_info<format>::significand_bits;
 			constexpr int exponent_bits = ieee754_format_info<format>::exponent_bits;
@@ -128,19 +149,10 @@ namespace jkj::fp {
 			return (u & exponent_bits_mask) == 0;
 		}
 		static constexpr bool is_positive_infinity(carrier_uint u) noexcept {
-			constexpr int significand_bits = ieee754_format_info<format>::significand_bits;
-			constexpr int exponent_bits = ieee754_format_info<format>::exponent_bits;
-			constexpr auto positive_infinity =
-				carrier_uint((carrier_uint(1) << exponent_bits) - 1) << significand_bits;
-			return u == positive_infinity;
+			return u == float_to_carrier(positive_infinity());
 		}
 		static constexpr bool is_negative_infinity(carrier_uint u) noexcept {
-			constexpr int significand_bits = ieee754_format_info<format>::significand_bits;
-			constexpr int exponent_bits = ieee754_format_info<format>::exponent_bits;
-			constexpr auto negative_infinity =
-				(carrier_uint((carrier_uint(1) << exponent_bits) - 1) << significand_bits)
-				| (carrier_uint(1) << (carrier_bits - 1));
-			return u == negative_infinity;
+			return u == float_to_carrier(negative_infinity());
 		}
 		static constexpr bool is_infinity(carrier_uint u) noexcept {
 			return is_positive_infinity(u) || is_negative_infinity(u);
@@ -178,6 +190,22 @@ namespace jkj::fp {
 
 		constexpr T to_float() const noexcept {
 			return ieee754_traits<T>::carrier_to_float(u);
+		}
+
+		static constexpr carrier_uint positive_zero() noexcept {
+			return ieee754_traits<T>::positive_zero();
+		}
+
+		static constexpr carrier_uint negative_zero() noexcept {
+			return ieee754_traits<T>::negative_zero();
+		}
+
+		static constexpr carrier_uint positive_infinity() noexcept {
+			return ieee754_traits<T>::positive_infinity();
+		}
+
+		static constexpr carrier_uint negative_infinity() noexcept {
+			return ieee754_traits<T>::negative_infinity();
 		}
 
 		constexpr carrier_uint extract_significand_bits() const noexcept {

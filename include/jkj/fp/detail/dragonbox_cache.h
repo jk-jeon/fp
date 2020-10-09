@@ -839,19 +839,6 @@ namespace jkj::fp {
 					return res;
 				}();
 
-				struct pow5_holder_t {
-					std::uint64_t table[compression_ratio];
-				};
-				static constexpr pow5_holder_t pow5 = [] {
-					pow5_holder_t res{};
-					std::uint64_t p = 1;
-					for (std::size_t i = 0; i < compression_ratio; ++i) {
-						res.table[i] = p;
-						p *= 5;
-					}
-					return res;
-				}();
-
 				static constexpr std::uint32_t errors[] = {
 					0x50001400, 0x54044100, 0x54014555, 0x55954415, 0x54115555,
 					0x00000001, 0x50000000, 0x00104000, 0x54010004, 0x05004001,

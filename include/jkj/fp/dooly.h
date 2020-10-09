@@ -20,13 +20,11 @@
 
 #include "decimal_fp.h"
 #include "dragonbox.h"
-#include "ryu_printf.h"
 #include "policy.h"
 #include "detail/bits.h"
 #include "detail/div.h"
 #include "detail/log.h"
 #include "detail/util.h"
-#include "detail/macros.h"
 #include <cassert>
 #include <cstdint>
 
@@ -76,10 +74,8 @@ namespace jkj::fp {
 				static constexpr auto max_significand =
 					compute_power<decimal_digit_limit>(carrier_uint(10)) - 1;
 
-				static constexpr auto sign_bit_mask =
-					carrier_uint(carrier_uint(1) << (significand_bits + exponent_bits));
-				static constexpr auto infinity =
-					carrier_uint(((carrier_uint(1) << exponent_bits) - 1) << significand_bits);
+				static constexpr auto sign_bit_mask = ieee754_traits<Float>::negative_zero();
+				static constexpr auto infinity = ieee754_traits<Float>::positive_infinity();
 
 				static constexpr auto normal_residual_mask =
 					carrier_uint((carrier_uint(1) << (carrier_bits - significand_bits - 2)) - 1);
@@ -309,195 +305,6 @@ namespace jkj::fp {
 			decltype(policy::sign::propagate),
 			decltype(policy::cache::fast)>(decimal);
 	}
-
-	// Does the same thing as ryu_printf, but specialized for the usage in Dooly.
-	// Suppose the input decimal number is of the form
-	// (g + alpha) * 10^k, where g is an integer and alpha is in [0,1).
-	// Write k = q * eta + r for integers q, r with 0 <= r < eta, where eta is the segment length.
-	// What this class does is to generate digits of 2^e for given e, from the
-	// segment index given as a construction parameter, which should be -q.
-	// This class will tell if the given initial segment index is the first nonzero segment or not.
-	// If there are preceding nonzero segments, then that means 2^e is strictly greater than
-	// alpha * 10^k. If not, then compare floor(alpha * 10^r) with the initial segment
-	// generated from this class. If they are equal, then compare
-	// floor(alpha * 10^(r + eta)) with the next segment generated, and if they are still equal,
-	// then compare floor(alpha * 10^(r + 2 * eta)) with the next segment generated,
-	// and so on. In this way, the user can compare alpha * 10^k and 2^e.
-	template <class Float>
-	class dooly_generator : private detail::ryu_printf::impl_base<ieee754_traits<Float>::format>
-	{
-	public:
-		static constexpr auto format = ieee754_traits<Float>::format;
-
-	private:
-		using impl_base = detail::ryu_printf::impl_base<format>;
-		using impl_base::significand_bits;
-		using impl_base::min_exponent;
-		using impl_base::exponent_bias;
-		using impl_base::segment_bit_size;
-		using impl_base::compression_factor;
-		using fast_cache_holder = detail::ryu_printf::fast_cache_holder<format>;
-		using cache_entry_type = typename fast_cache_holder::cache_entry_type;
-
-		using carrier_uint = typename ieee754_traits<Float>::carrier_uint;
-		static constexpr auto carrier_bits = ieee754_traits<Float>::carrier_bits;
-
-		int exponent_;
-		std::uint32_t segment_;
-		int segment_index_;		// n
-		int exponent_index_;	// k
-		int remainder_;			// r
-		int min_segment_index_;
-		int max_segment_index_;
-
-	public:
-		using impl_base::segment_size;
-		using impl_base::segment_divisor;
-
-		static constexpr auto max_nonzero_decimal_digits =
-			detail::log::floor_log10_pow5(significand_bits - min_exponent) +
-			detail::log::floor_log10_pow2(significand_bits) + 2;
-
-		// Computes the first segmnet on construction.
-		JKJ_FORCEINLINE dooly_generator(int exponent, int initial_segment_index) noexcept
-			: exponent_{ exponent }, segment_index_{ initial_segment_index }
-		{
-			// 2^e * 10^(n * eta) >= 1
-			// <=>
-			// n >= ceil(-e * log10(2) / eta) = -floor(e * log10(2) / eta)
-			if (exponent_ >= 0) {
-				// Avoid signed division.
-				min_segment_index_ =
-					-int(unsigned(detail::log::floor_log10_pow2(exponent_)) / unsigned(segment_size));
-				max_segment_index_ = 0;
-			}
-			else {
-				// Avoid signed division.
-				min_segment_index_ =
-					int(unsigned(detail::log::floor_log10_pow2(-exponent_) / unsigned(segment_size))) + 1;
-				max_segment_index_ = int(unsigned(-exponent_ + segment_size - 1) / unsigned(segment_size));
-			}
-
-			// We will compute the first segment.
-
-			// Avoid signed division.
-			int pow2_exponent = exponent_ + segment_index_ * segment_size;
-			if (pow2_exponent >= 0) {
-				exponent_index_ = int(unsigned(pow2_exponent) / unsigned(compression_factor));
-				remainder_ = int(unsigned(pow2_exponent) % unsigned(compression_factor));
-			}
-			else {
-				exponent_index_ = -int(unsigned(-pow2_exponent) / unsigned(compression_factor));
-				remainder_ = int(unsigned(-pow2_exponent) % unsigned(compression_factor));
-
-				if (remainder_ != 0) {
-					--exponent_index_;
-					remainder_ = compression_factor - remainder_;
-				}
-			}
-
-			// Get the first nonzero segment.
-			if (segment_index_ >= min_segment_index_ && segment_index_ <= max_segment_index_) {
-				segment_ = compute_segment();
-			}
-			else {
-				segment_ = 0;
-			}
-		}
-
-		std::uint32_t current_segment() const noexcept {
-			return segment_;
-		}
-
-		int current_segment_index() const noexcept {
-			return segment_index_;
-		}
-
-		bool has_further_nonzero_segments() const noexcept {
-			if (segment_index_ >= max_segment_index_) {
-				return false;
-			}
-			else {
-				// Check if there are reamining nonzero digits,
-				// which is equivalent to that f * 2^e * 10^(n * eta) is not an integer.
-
-				auto minus_pow5_exponent = -segment_index_ * segment_size;
-				auto minus_pow2_exponent = -exponent_ + minus_pow5_exponent;
-
-				return minus_pow2_exponent > 0 || minus_pow5_exponent > 0;
-			}
-		}
-
-		// Returns true if there might be nonzero segments remaining,
-		// and returns false if all following segments are zero.
-		JKJ_FORCEINLINE bool compute_next_segment() noexcept {
-			++segment_index_;
-			if (segment_index_ <= max_segment_index_) {
-				on_increase_segment_index();
-				return true;
-			}
-			else {
-				segment_ = 0;
-				return false;
-			}
-		}
-
-	private:
-		JKJ_FORCEINLINE std::uint32_t compute_segment() const noexcept {
-			auto const& cache = fast_cache_holder::cache[exponent_index_ +
-				fast_cache_holder::get_starting_index_minus_min_k(segment_index_)];
-			return multiply_shift_mod(cache, segment_bit_size + remainder_);
-		}
-
-		JKJ_FORCEINLINE void on_increase_segment_index() noexcept {
-			assert(segment_index_ <= max_segment_index_);
-			remainder_ += segment_size;
-			static_assert(segment_size < compression_factor);
-			if (remainder_ >= compression_factor) {
-				++exponent_index_;
-				remainder_ -= compression_factor;
-			}
-			if (segment_index_ >= min_segment_index_) {
-				segment_ = compute_segment();
-			}
-		}
-
-		JKJ_SAFEBUFFERS JKJ_FORCEINLINE static std::uint32_t multiply_shift_mod(
-			cache_entry_type const& y, int shift_amount) noexcept
-		{
-			using namespace detail;
-
-			if constexpr (format == ieee754_format::binary32) {
-				static_assert(value_bits<carrier_uint> <= 32);
-				assert(shift_amount > 0 && shift_amount <= 64);
-				auto shift_result = ((std::uint64_t(y[0]) << 32) | y[1]) >> (64 - shift_amount);
-
-				return std::uint32_t(shift_result % segment_divisor);
-			}
-			else {
-				static_assert(format == ieee754_format::binary64);
-				static_assert(value_bits<carrier_uint> <= 64);
-				assert(shift_amount > 0 && shift_amount <= 128);
-				auto shift_result = shift_amount <= 64 ?
-					wuint::uint128{ 0, y[0] >> (64 - shift_amount) } :
-					wuint::uint128{ y[0], y[1] } >> (128 - shift_amount);
-
-				// Granlund-Montgomery style division by 10^9
-				static_assert(compression_factor + segment_size - 1 <= 75);
-				// Note that shift_result is of shift_amount bits.
-				// For 75-bit numbers, it is sufficient to use 76-bits, but to
-				// make computation simpler, we will use 99-bits.
-				// The result of multiplication fits inside 192-bit,
-				// and the corresponding shift amount is 128 bits so we just need to
-				// take the upper 64-bits.
-				auto const c = wuint::uint128{ 0x4'4b82'fa09, 0xb5a5'2cb9'8bc9'c4a7 };
-
-				auto q = wuint::umul256_upper_middle64(shift_result, c);
-				return std::uint32_t(shift_result.low()) - segment_divisor * std::uint32_t(q);
-			}
-		}
-	};
 }
 
-#include "detail/undef_macros.h"
 #endif

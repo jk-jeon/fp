@@ -15,23 +15,26 @@
 // is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
 // KIND, either express or implied.
 
-#include "fixed_precision_benchmark.h"
-#include "jkj/fp/to_chars/fixed_precision.h"
+#ifndef JKJ_HEADER_FP_FIXED_PRECISION_BENCHMARK
+#define JKJ_HEADER_FP_FIXED_PRECISION_BENCHMARK
 
-namespace {
-	void float_to_chars(float x, char* buffer, int precision)
-	{
-		jkj::fp::to_chars_fixed_precision_scientific_n(x, buffer, precision);
-	}
-	void double_to_chars(double x, char* buffer, int precision)
-	{
-		jkj::fp::to_chars_fixed_precision_scientific_n(x, buffer, precision);
-	}
+#include <string_view>
 
-	auto dummy = []() -> register_function_for_fixed_precision_benchmark {
-		return{ "fp",
-			float_to_chars,
-			double_to_chars
-		};
-	}();
-}
+struct register_function_for_to_chars_fixed_precision_benchmark {
+	register_function_for_to_chars_fixed_precision_benchmark() = default;
+
+	register_function_for_to_chars_fixed_precision_benchmark(
+		std::string_view name,
+		void(*func)(float, char*, int));
+
+	register_function_for_to_chars_fixed_precision_benchmark(
+		std::string_view name,
+		void(*func)(double, char*, int));
+
+	register_function_for_to_chars_fixed_precision_benchmark(
+		std::string_view name,
+		void(*func_float)(float, char*, int),
+		void(*func_double)(double, char*, int));
+};
+
+#endif

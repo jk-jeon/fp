@@ -53,17 +53,17 @@ namespace jkj::fp {
 			return c;
 		}
 
-		template <class UInt, UInt a, class PowerList>
+		template <class UInt, UInt a, std::size_t starting_power, class PowerList>
 		struct pow_table_impl;
 
-		template <class UInt, UInt a, std::size_t... powers>
-		struct pow_table_impl<UInt, a, std::index_sequence<powers...>> {
+		template <class UInt, UInt a, std::size_t starting_power, std::size_t... offsets>
+		struct pow_table_impl<UInt, a, starting_power, std::index_sequence<offsets...>> {
 			static_assert(std::is_unsigned_v<UInt>);
-			static constexpr UInt table[] = { compute_power<powers>(a)... };
+			static constexpr UInt table[] = { compute_power<starting_power + offsets>(a)... };
 		};
 
-		template <class UInt, UInt a, std::size_t table_size>
-		using pow_table = pow_table_impl<UInt, a, std::make_index_sequence<table_size>>;
+		template <class UInt, UInt a, std::size_t table_size, std::size_t starting_power = 0>
+		using pow_table = pow_table_impl<UInt, a, starting_power, std::make_index_sequence<table_size>>;
 
 		// C++20 std::remove_cvref_t
 		template <class T>

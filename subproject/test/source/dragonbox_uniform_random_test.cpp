@@ -70,12 +70,12 @@ int main()
 
 	if constexpr (run_float) {
 		std::cout << "[Testing Dragonbox for uniformly randomly generated binary32 inputs...]\n";
-		success &= uniform_random_test<float>(number_of_uniform_random_tests_float, "float");
+		success &= uniform_random_test<float>(number_of_uniform_random_tests_float, "binary32");
 		std::cout << "Done.\n\n\n";
 	}
 	if constexpr (run_double) {
 		std::cout << "[Testing Dragonbox for uniformly randomly generated binary64 inputs...]\n";
-		success &= uniform_random_test<double>(number_of_uniform_random_tests_double, "double");
+		success &= uniform_random_test<double>(number_of_uniform_random_tests_double, "binary64");
 		std::cout << "Done.\n\n\n";
 	}
 

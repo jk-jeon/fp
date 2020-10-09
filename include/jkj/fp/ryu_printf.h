@@ -47,11 +47,12 @@ namespace jkj::fp {
 
 				// It is possible that taking a non-maximum value can result in a shorter table.
 				static constexpr int compression_factor =
-					format == ieee754_format::binary32 ? 11 : 46;
+					format == ieee754_format::binary32 ? 10 : 45;
 
+				// -1 for Dooly
 				static constexpr int max_compression_factor =
 					fast_cache_holder<format>::multiply_and_reduce_result_bits -
-					ieee754_format_info<format>::significand_bits - segment_bit_size;
+					ieee754_format_info<format>::significand_bits - segment_bit_size - 1;
 
 				static_assert(compression_factor <= max_compression_factor);
 			};
@@ -66,6 +67,7 @@ namespace jkj::fp {
 	// The interface is pull-oriented rather than push-oriented;
 	// it is the user who controls the flow, so there is no callback mechanism.
 	// The user can request the object to obtain the next segment.
+	// TODO: Interface for Dooly should be overhauled.
 	template <class Float>
 	class ryu_printf : private detail::ryu_printf::impl_base<ieee754_traits<Float>::format>
 	{
@@ -107,7 +109,10 @@ namespace jkj::fp {
 		// Computes the first segmnet on construction.
 		ryu_printf(Float x) noexcept : ryu_printf(ieee754_bits{ x }) {}
 
-		JKJ_FORCEINLINE ryu_printf(ieee754_bits<Float> br) noexcept {
+		template <bool middle_point = false>
+		JKJ_FORCEINLINE ryu_printf(ieee754_bits<Float> br,
+			std::bool_constant<middle_point> = {}) noexcept
+		{
 			using namespace detail;
 
 			significand_ = br.extract_significand_bits();
@@ -115,13 +120,13 @@ namespace jkj::fp {
 
 			if (exponent_ != 0) {
 				// If the input is normal
-				exponent_ += exponent_bias - significand_bits;
+				exponent_ += exponent_bias - significand_bits - 1;
 				significand_ |= (carrier_uint(1) << significand_bits);
 
-				// n0 = floor((-e-p-1)log10(2) / eta) + 1
+				// n0 = floor((-e-p-2)log10(2) / eta) + 1
 				// Avoid signed division.
-				auto const dividend = log::floor_log10_pow2(-exponent_ - significand_bits - 1);
-				if (exponent_ <= -significand_bits - 1) {
+				auto const dividend = log::floor_log10_pow2(-exponent_ - significand_bits - 2);
+				if (exponent_ <= -significand_bits - 2) {
 					assert(dividend >= 0);
 					segment_index_ = int(unsigned(dividend) / unsigned(segment_size) + 1);
 					max_segment_index_ = int(unsigned(-exponent_ + segment_size - 1) / unsigned(segment_size));
@@ -139,9 +144,9 @@ namespace jkj::fp {
 			}
 			else {
 				// If the input is subnormal
-				exponent_ = min_exponent - significand_bits;
+				exponent_ = min_exponent - significand_bits - 1;
 
-				// n0 = floor((-e-p-1)log10(2) / eta) + 1
+				// n0 = floor((-e-p-2)log10(2) / eta) + 1
 				// Avoid signed division.
 				constexpr auto dividend = log::floor_log10_pow2(-min_exponent - 1);
 				static_assert(dividend >= 0);
@@ -151,6 +156,7 @@ namespace jkj::fp {
 
 			// Align the implicit bit to the MSB.
 			significand_ <<= (carrier_bits - significand_bits - 1);
+			significand_ |= (carrier_uint(middle_point) << (carrier_bits - significand_bits - 2));
 
 			// We will compute the first segment.
 
@@ -202,7 +208,7 @@ namespace jkj::fp {
 				// Check the exponent of 2.
 				if (minus_pow2_exponent > 0 &&
 					!detail::div::divisible_by_power_of_2(significand_,
-						minus_pow2_exponent + (carrier_bits - significand_bits - 1)))
+						minus_pow2_exponent + (carrier_bits - significand_bits - 2)))
 				{
 					return true;
 				}
@@ -239,7 +245,7 @@ namespace jkj::fp {
 			auto const& cache = fast_cache_holder::cache[exponent_index_ +
 				fast_cache_holder::get_starting_index_minus_min_k(segment_index_)];
 			return multiply_shift_mod(significand_, cache,
-				segment_bit_size + remainder_ - carrier_bits + significand_bits + 1);
+				segment_bit_size + remainder_ - carrier_bits + significand_bits + 2);
 		}
 
 		JKJ_FORCEINLINE void on_increase_segment_index() noexcept {

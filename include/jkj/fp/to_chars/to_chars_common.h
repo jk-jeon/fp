@@ -31,8 +31,7 @@ namespace jkj::fp {
 			static_assert(max_length > 0);
 			static_assert(max_length <= log::floor_log10_pow2(value_bits<UInt>));
 			constexpr auto threshold = compute_power<max_length - 1>(UInt(10));
-			constexpr auto upper_bound = compute_power<max_length>(UInt(10));
-			assert(x < upper_bound);
+			assert(x < compute_power<max_length>(UInt(10)));
 
 			if constexpr (max_length == 1) {
 				return 1;

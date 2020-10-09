@@ -85,14 +85,14 @@ int main()
 
 	if constexpr (run_float) {
 		std::cout << "[Testing fixed-precision scientific formatting with "
-			<< "uniformly randomly generated float inputs...]\n";
-		success &= test_scientific<float>(number_of_samples_float, max_precision_float, "float");
+			<< "uniformly randomly generated binary32 inputs...]\n";
+		success &= test_scientific<float>(number_of_samples_float, max_precision_float, "binary32");
 		std::cout << "Done.\n\n\n";
 	}
 	if constexpr (run_double) {
 		std::cout << "[Testing fixed-precision scientific formatting with "
-			<< "uniformly randomly generated double inputs...]\n";
-		success &= test_scientific<double>(number_of_samples_double, max_precision_double, "double");
+			<< "uniformly randomly generated binary64 inputs...]\n";
+		success &= test_scientific<double>(number_of_samples_double, max_precision_double, "binary64");
 		std::cout << "Done.\n\n\n";
 	}
 

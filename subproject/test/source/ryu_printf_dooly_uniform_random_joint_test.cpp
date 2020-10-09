@@ -15,22 +15,28 @@
 // is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
 // KIND, either express or implied.
 
-#include "jkj/fp/dragonbox.h"
-#include "jkj/fp/dooly.h"
+#include "jkj/fp/from_chars/from_chars.h"
+#include "jkj/fp/to_chars/shortest_precise.h"
 #include "ryu/ryu.h"
 #include "random_float.h"
 #include <iostream>
+#include <memory>
 #include <string_view>
 
 template <class Float, class TypenameString>
 static bool uniform_random_test(std::size_t number_of_tests, TypenameString&& type_name_string)
 {
+	auto buffer = std::make_unique<char[]>(10000);
+
 	auto rg = jkj::fp::detail::generate_correctly_seeded_mt19937_64();
 	bool success = true;
 	for (std::size_t test_idx = 0; test_idx < number_of_tests; ++test_idx) {
 		auto x = jkj::fp::detail::uniformly_randomly_generate_finite_float<Float>(rg);
-		auto dec = jkj::fp::to_shortest_decimal(x);
-		auto roundtrip = jkj::fp::to_binary_limited_precision(dec);
+		char* ptr = buffer.get();
+		ptr = jkj::fp::to_chars_precise_scientific_n(x, ptr);
+
+		// Roudtrip
+		auto roundtrip = jkj::fp::from_chars_unlimited<Float>(buffer.get(), ptr);
 
 		if (x != roundtrip.to_float()) {
 			char buffer1[64];
@@ -65,7 +71,11 @@ int main()
 	constexpr std::size_t number_of_uniform_random_tests = 10000000;
 	bool success = true;
 
-	std::cout << "[Joint-testing Dragonbox and Dooly for uniformly randomly generated binary64 inputs...]\n";
+	std::cout << "[Joint-testing Ryu-printf and Dooly for uniformly randomly generated binary32 inputs...]\n";
+	success &= uniform_random_test<float>(number_of_uniform_random_tests, "binary32");
+	std::cout << "Done.\n\n\n";
+
+	std::cout << "[Joint-testing Ryu-printf and Dooly for uniformly randomly generated binary64 inputs...]\n";
 	success &= uniform_random_test<double>(number_of_uniform_random_tests, "binary64");
 	std::cout << "Done.\n\n\n";
 

@@ -15,37 +15,27 @@
 // is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
 // KIND, either express or implied.
 
-#include "jkj/fp/dooly.h"
-#include "jkj/fp/from_chars/from_chars.h"
-#include "ryu/ryu.h"
+#ifndef JKJ_HEADER_FP_FROM_CHARS_LIMITED_PRECISION_BENCHMARK
+#define JKJ_HEADER_FP_FROM_CHARS_LIMITED_PRECISION_BENCHMARK
 
-#include <chrono>
-#include <iostream>
-#include <iomanip>
 #include <string>
 #include <string_view>
-#include <stdexcept>
-#include <memory>
-#include <vector>
 
-int main()
-{
-	using float_type = double;
-	while (true) {
-		std::string str;
-		std::cin >> str;
+struct register_function_for_from_chars_limited_precision_benchmark {
+	register_function_for_from_chars_limited_precision_benchmark() = default;
 
-		char buffer[64];
-		auto x = jkj::fp::from_chars_unlimited<float_type>(str.data(), str.data() + str.length());
+	register_function_for_from_chars_limited_precision_benchmark(
+		std::string_view name,
+		float(*func)(std::string const&));
 
-		if constexpr (std::is_same_v<float_type, float>) {
-			f2s_buffered(x.to_float(), buffer);
-		}
-		else {
-			d2s_buffered(x.to_float(), buffer);
-		}
-		std::cout << std::hexfloat <<
-			std::setprecision(std::is_same_v<float_type, float> ? 6 : 13)
-			<< x.to_float() << " (" << buffer << ")\n";
-	}
-}
+	register_function_for_from_chars_limited_precision_benchmark(
+		std::string_view name,
+		double(*func)(std::string const&));
+
+	register_function_for_from_chars_limited_precision_benchmark(
+		std::string_view name,
+		float(*func_float)(std::string const&),
+		double(*func_double)(std::string const&));
+};
+
+#endif

@@ -924,7 +924,8 @@ namespace jkj::fp {
 								assert(alpha > 0 && alpha < 64);
 
 								// Try to recover the real cache
-								auto pow5 = dragonbox::compressed_cache_detail::pow5.table[offset];
+								auto pow5 = pow_table<std::uint64_t, 5,
+									dragonbox::compressed_cache_detail::compression_ratio>::table[offset];
 								auto recovered_cache = wuint::umul128(base_cache.high(), pow5);
 								auto middle_low = wuint::umul128(base_cache.low() - (kb < 0 ? 1 : 0), pow5);
 

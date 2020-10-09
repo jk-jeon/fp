@@ -70,10 +70,10 @@ namespace jkj::fp {
 	};
 
 	template <class Float>
-	using unsigned_fp_t = decimal_fp<Float, false, false>;
+	using unsigned_decimal_fp = decimal_fp<Float, false, false>;
 
 	template <class Float>
-	using signed_fp_t = decimal_fp<Float, true, false>;
+	using signed_decimal_fp = decimal_fp<Float, true, false>;
 }
 
 #endif

@@ -15,19 +15,23 @@
 // is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
 // KIND, either express or implied.
 
-#include "to_chars_shortest_roundtrip_benchmark.h"
-#include "ryu/ryu.h"
+#include "to_chars_fixed_precision_benchmark.h"
+#include "jkj/fp/to_chars/fixed_precision.h"
 
 namespace {
-	auto dummy = []() -> register_function_for_to_chars_shortest_roundtrip_benchmark {
-		if constexpr (benchmark_kind == benchmark_no_trailing_zero) {
-			return { "Ryu",
-				f2s_buffered,
-				d2s_buffered
-			};
-		}
-		else {
-			return {};
-		}
+	void float_to_chars(float x, char* buffer, int precision)
+	{
+		jkj::fp::to_chars_fixed_precision_scientific_n(x, buffer, precision);
+	}
+	void double_to_chars(double x, char* buffer, int precision)
+	{
+		jkj::fp::to_chars_fixed_precision_scientific_n(x, buffer, precision);
+	}
+
+	auto dummy = []() -> register_function_for_to_chars_fixed_precision_benchmark {
+		return{ "fp",
+			float_to_chars,
+			double_to_chars
+		};
 	}();
 }

@@ -15,26 +15,23 @@
 // is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
 // KIND, either express or implied.
 
-#ifndef JKJ_HEADER_FP_FIXED_PRECISION_BENCHMARK
-#define JKJ_HEADER_FP_FIXED_PRECISION_BENCHMARK
+#include "from_chars_unlimited_precision_benchmark.h"
 
-#include <string_view>
+namespace {
+	float float_from_chars(std::string const& str)
+	{
+		return std::stof(str);
 
-struct register_function_for_fixed_precision_benchmark {
-	register_function_for_fixed_precision_benchmark() = default;
+	}
+	double double_from_chars(std::string const& str)
+	{
+		return std::stod(str);
+	}
 
-	register_function_for_fixed_precision_benchmark(
-		std::string_view name,
-		void(*func)(float, char*, int));
-
-	register_function_for_fixed_precision_benchmark(
-		std::string_view name,
-		void(*func)(double, char*, int));
-
-	register_function_for_fixed_precision_benchmark(
-		std::string_view name,
-		void(*func_float)(float, char*, int),
-		void(*func_double)(double, char*, int));
-};
-
-#endif
+	auto dummy = []() -> register_function_for_from_chars_unlimited_precision_benchmark {
+		return{ "stof/stod",
+			float_from_chars,
+			double_from_chars
+		};
+	}();
+}

@@ -85,10 +85,10 @@ auto generate_cache_impl()
 
 	// -1 for Dooly
 	constexpr auto min_e = ieee754_format_info::min_exponent - significand_bits - 1;
-	constexpr auto max_e = ieee754_format_info::max_exponent - significand_bits;
+	constexpr auto max_e = ieee754_format_info::max_exponent - significand_bits - 1;
 
 	constexpr auto min_n = -int(
-		unsigned(-log::floor_log10_pow2(-max_e - significand_bits - 1)) / unsigned(segment_size));
+		unsigned(-log::floor_log10_pow2(-max_e - significand_bits - 2)) / unsigned(segment_size));
 
 	constexpr auto max_n = (-min_e % segment_size == 0) ?
 		-min_e / segment_size : -min_e / segment_size + 1;
@@ -104,25 +104,25 @@ auto generate_cache_impl()
 	std::map<int, k_range_t> k_ranges;
 	for (int e = min_e; e <= max_e; ++e)
 	{
-		// n0 = floor((-e-p-1)log10(2) / eta) + 1
+		// n0 = floor((-e-p-2)log10(2) / eta) + 1
 		// Avoids signed division
-		auto const dividend = log::floor_log10_pow2(-e - significand_bits - 1);
+		auto const dividend = log::floor_log10_pow2(-e - significand_bits - 2);
 		int local_min_n, local_max_n;
 
-		if (e <= -significand_bits - 1) {
+		if (e <= -significand_bits - 2) {
 			assert(dividend >= 0);
-			local_min_n = unsigned(dividend) / unsigned(segment_size) + 1;
+			local_min_n = int(unsigned(dividend) / unsigned(segment_size) + 1);
 			local_max_n = unsigned(-e) % unsigned(segment_size) == 0 ?
-				unsigned(-e) / unsigned(segment_size) :
-				unsigned(-e) / unsigned(segment_size) + 1;
+				int(unsigned(-e) / unsigned(segment_size)) :
+				int(unsigned(-e) / unsigned(segment_size) + 1);
 		}
 		else {
 			assert(dividend < 0);
 			local_min_n = -int(unsigned(-dividend) / unsigned(segment_size));
 			if (e < 0) {
 				local_max_n = unsigned(-e) % unsigned(segment_size) == 0 ?
-					unsigned(-e) / unsigned(segment_size) :
-					unsigned(-e) / unsigned(segment_size) + 1;
+					int(unsigned(-e) / unsigned(segment_size)) :
+					int(unsigned(-e) / unsigned(segment_size) + 1);
 			}
 			else {
 				local_max_n = 0;
@@ -172,15 +172,15 @@ auto generate_cache_impl()
 			-min_e - min_n * segment_size,
 			cache_bits + min_e + min_n * segment_size - (compression_factor - 1) - segment_bit_size,
 			cache_bits - segment_bit_size,
-			significand_bits + 1),
+			significand_bits + 2),
 		required_bits_for_reciprocal_left_shift(
 			log::floor_log2_pow5(max_n * segment_size) + 1,
 			min_n * segment_size,
 			max_e + max_n * segment_size,
 			cache_bits + max_e + max_n * segment_size - segment_bit_size,
-			significand_bits + 1)));
+			significand_bits + 2)));
 	using bigint_t = bigint<required_bits>;
-	auto max_f = bigint_t((std::uint64_t(1) << (significand_bits + 1)) - 1);
+	auto max_f = bigint_t((std::uint64_t(1) << (significand_bits + 2)) - 1);
 
 	auto power_of_5 = bigint_t{ 1 };
 	auto power_of_5_multiplier = bigint_t::power_of_5(segment_size);

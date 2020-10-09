@@ -132,7 +132,7 @@ namespace jkj::fp {
 		}
 
 		template <class Float>
-		static char* to_chars_shortest_scientific_n_impl_impl(unsigned_fp_t<Float> v, char* buffer)
+		static char* to_chars_shortest_scientific_n_impl_impl(unsigned_decimal_fp<Float> v, char* buffer)
 		{
 			constexpr auto max_decimal_length =
 				ieee754_format_info<ieee754_traits<Float>::format>::decimal_digits;
@@ -254,10 +254,10 @@ namespace jkj::fp {
 			return buffer;
 		}
 		
-		char* to_chars_shortest_scientific_n_impl(unsigned_fp_t<float> v, char* buffer) {
+		char* to_chars_shortest_scientific_n_impl(unsigned_decimal_fp<float> v, char* buffer) {
 			return to_chars_shortest_scientific_n_impl_impl(v, buffer);
 		}
-		char* to_chars_shortest_scientific_n_impl(unsigned_fp_t<double> v, char* buffer) {
+		char* to_chars_shortest_scientific_n_impl(unsigned_decimal_fp<double> v, char* buffer) {
 			return to_chars_shortest_scientific_n_impl_impl(v, buffer);
 		}
 	}

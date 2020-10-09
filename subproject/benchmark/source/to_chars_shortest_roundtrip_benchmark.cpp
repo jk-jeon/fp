@@ -15,7 +15,7 @@
 // is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
 // KIND, either express or implied.
 
-#include "shortest_roundtrip_benchmark.h"
+#include "to_chars_shortest_roundtrip_benchmark.h"
 #include "random_float.h"
 #include "jkj/fp/to_chars/shortest_roundtrip.h"
 #include <array>
@@ -122,21 +122,21 @@ private:
 	std::unordered_map<std::string, void(*)(Float, char*)>	name_func_pairs_;
 };
 
-register_function_for_shortest_roundtrip_benchmark::register_function_for_shortest_roundtrip_benchmark(
+register_function_for_to_chars_shortest_roundtrip_benchmark::register_function_for_to_chars_shortest_roundtrip_benchmark(
 	std::string_view name,
 	void(*func_float)(float, char*))
 {
 	benchmark_holder<float>::get_instance().register_function(name, func_float);
 };
 
-register_function_for_shortest_roundtrip_benchmark::register_function_for_shortest_roundtrip_benchmark(
+register_function_for_to_chars_shortest_roundtrip_benchmark::register_function_for_to_chars_shortest_roundtrip_benchmark(
 	std::string_view name,
 	void(*func_double)(double, char*))
 {
 	benchmark_holder<double>::get_instance().register_function(name, func_double);
 };
 
-register_function_for_shortest_roundtrip_benchmark::register_function_for_shortest_roundtrip_benchmark(
+register_function_for_to_chars_shortest_roundtrip_benchmark::register_function_for_to_chars_shortest_roundtrip_benchmark(
 	std::string_view name,
 	void(*func_float)(float, char*),
 	void(*func_double)(double, char*))

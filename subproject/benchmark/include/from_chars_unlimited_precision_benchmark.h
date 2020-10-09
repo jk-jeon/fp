@@ -15,31 +15,27 @@
 // is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
 // KIND, either express or implied.
 
-#ifndef JKJ_HEADER_FP_SHORTEST_ROUNDTRIP_BENCHMARK
-#define JKJ_HEADER_FP_SHORTEST_ROUNDTRIP_BENCHMARK
+#ifndef JKJ_HEADER_FP_FROM_CHARS_UNLIMITED_PRECISION_BENCHMARK
+#define JKJ_HEADER_FP_FROM_CHARS_UNLIMITED_PRECISION_BENCHMARK
 
+#include <string>
 #include <string_view>
 
-static constexpr enum {
-	benchmark_no_trailing_zero,
-	benchmark_allow_trailing_zero
-} benchmark_kind = benchmark_allow_trailing_zero;
+struct register_function_for_from_chars_unlimited_precision_benchmark {
+	register_function_for_from_chars_unlimited_precision_benchmark() = default;
 
-struct register_function_for_shortest_roundtrip_benchmark {
-	register_function_for_shortest_roundtrip_benchmark() = default;
-
-	register_function_for_shortest_roundtrip_benchmark(
+	register_function_for_from_chars_unlimited_precision_benchmark(
 		std::string_view name,
-		void(*func)(float, char*));
+		float(*func)(std::string const&));
 
-	register_function_for_shortest_roundtrip_benchmark(
+	register_function_for_from_chars_unlimited_precision_benchmark(
 		std::string_view name,
-		void(*func)(double, char*));
+		double(*func)(std::string const&));
 
-	register_function_for_shortest_roundtrip_benchmark(
+	register_function_for_from_chars_unlimited_precision_benchmark(
 		std::string_view name,
-		void(*func_float)(float, char*),
-		void(*func_double)(double, char*));
+		float(*func_float)(std::string const&),
+		double(*func_double)(std::string const&));
 };
 
 #endif

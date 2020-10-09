@@ -18,12 +18,12 @@
 #ifndef JKJ_HEADER_FP_TO_CHARS_SHORTEST_ROUNDTRIP
 #define JKJ_HEADER_FP_TO_CHARS_SHORTEST_ROUNDTRIP
 
-#include "jkj/fp/dragonbox.h"
+#include "../dragonbox.h"
 
 namespace jkj::fp {
 	namespace detail {
-		char* to_chars_shortest_scientific_n_impl(unsigned_fp_t<float> v, char* buffer);
-		char* to_chars_shortest_scientific_n_impl(unsigned_fp_t<double> v, char* buffer);
+		char* to_chars_shortest_scientific_n_impl(unsigned_decimal_fp<float> v, char* buffer);
+		char* to_chars_shortest_scientific_n_impl(unsigned_decimal_fp<double> v, char* buffer);
 	}
 
 	// Returns the next-to-end position.

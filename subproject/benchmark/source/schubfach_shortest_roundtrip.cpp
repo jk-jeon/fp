@@ -15,7 +15,7 @@
 // is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
 // KIND, either express or implied.
 
-#include "shortest_roundtrip_benchmark.h"
+#include "to_chars_shortest_roundtrip_benchmark.h"
 #include "schubfach_32.h"
 #include "schubfach_64.h"
 
@@ -27,7 +27,7 @@ namespace {
 		schubfach::Dtoa(buf, x);
 	}
 
-	auto dummy = []() -> register_function_for_shortest_roundtrip_benchmark {
+	auto dummy = []() -> register_function_for_to_chars_shortest_roundtrip_benchmark {
 		if constexpr (benchmark_kind == benchmark_no_trailing_zero) {
 			return {};
 		}

@@ -52,6 +52,7 @@ set(jkj_fp_charconv_headers
         ${jkj_fp_headers}
         include/jkj/fp/to_chars/fixed_precision.h
         include/jkj/fp/to_chars/shortest_roundtrip.h
+        include/jkj/fp/to_chars/shortest_precise.h
         include/jkj/fp/to_chars/to_chars_common.h
         include/jkj/fp/from_chars/from_chars.h)
 

@@ -15,7 +15,7 @@
 // is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
 // KIND, either express or implied.
 
-#include "fixed_precision_benchmark.h"
+#include "to_chars_fixed_precision_benchmark.h"
 #include "ryu/ryu.h"
 
 namespace {
@@ -28,7 +28,7 @@ namespace {
 		d2exp_buffered(x, precision, buffer);
 	}
 
-	auto dummy = []() -> register_function_for_fixed_precision_benchmark {
+	auto dummy = []() -> register_function_for_to_chars_fixed_precision_benchmark {
 		return{ "Ryu",
 			float_to_chars,
 			double_to_chars

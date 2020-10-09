@@ -15,19 +15,32 @@
 // is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
 // KIND, either express or implied.
 
-#include "to_chars_shortest_roundtrip_benchmark.h"
-#include "ryu/ryu.h"
+#if defined(_MSC_VER) && _MSC_VER >= 1915
+
+#include "from_chars_unlimited_precision_benchmark.h"
+#include <charconv>
 
 namespace {
-	auto dummy = []() -> register_function_for_to_chars_shortest_roundtrip_benchmark {
-		if constexpr (benchmark_kind == benchmark_no_trailing_zero) {
-			return { "Ryu",
-				f2s_buffered,
-				d2s_buffered
-			};
-		}
-		else {
-			return {};
-		}
+	float float_from_chars(std::string const& str)
+	{
+		float value;
+		std::from_chars(str.data(), str.data() + str.length(), value);
+		return value;
+
+	}
+	double double_from_chars(std::string const& str)
+	{
+		double value;
+		std::from_chars(str.data(), str.data() + str.length(), value);
+		return value;
+	}
+
+	auto dummy = []() -> register_function_for_from_chars_unlimited_precision_benchmark {
+		return{ "std::from_chars",
+			float_from_chars,
+			double_from_chars
+		};
 	}();
 }
+
+#endif
