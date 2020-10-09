@@ -151,12 +151,12 @@ register_function_for_to_chars_shortest_roundtrip_benchmark::register_function_f
 #include <cstdlib>
 
 void run_matlab() {
-	std::system("matlab -nosplash -r \"cd('matlab'); plot_shortest_roundtrip_benchmarks\"");
+	std::system("matlab -nosplash -r \"cd('matlab'); plot_to_chars_shortest_roundtrip_benchmarks\"");
 }
 #endif
 
 template <class Float>
-static void benchmark_test(std::string_view float_name,
+void benchmark_test(std::string_view float_name,
 	std::size_t number_of_uniform_samples, std::size_t number_of_digits_samples_per_digits,
 	std::size_t number_of_iterations)
 {
@@ -168,7 +168,7 @@ static void benchmark_test(std::string_view float_name,
 	std::cout << "Benchmarking done.\n" << "Now writing to files...\n";
 
 	// Write uniform benchmark results
-	auto filename = std::string("results/shortest_roundtrip_uniform_benchmark_");
+	auto filename = std::string("results/to_chars_shortest_roundtrip_uniform_benchmark_");
 	filename += float_name;
 	filename += ".csv";
 	std::ofstream out_file{ filename };
@@ -197,7 +197,7 @@ static void benchmark_test(std::string_view float_name,
 	out_file.close();
 
 	// Write digits benchmark results
-	filename = std::string("results/shortest_roundtrip_digits_benchmark_");
+	filename = std::string("results/to_chars_shortest_roundtrip_digits_benchmark_");
 	filename += float_name;
 	filename += ".csv";
 	out_file.open(filename);

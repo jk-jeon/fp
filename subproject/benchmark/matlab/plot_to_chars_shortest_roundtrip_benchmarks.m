@@ -16,7 +16,7 @@
 % KIND, either express or implied.
 
 addpath('../../3rdparty/shaded_plots');
-plot_shortest_roundtrip_uniform_benchmark('../results/shortest_roundtrip_uniform_benchmark_binary32.csv', 32);
-plot_shortest_roundtrip_uniform_benchmark('../results/shortest_roundtrip_uniform_benchmark_binary64.csv', 64);
-avg32 = plot_shortest_roundtrip_digit_benchmark('../results/shortest_roundtrip_digits_benchmark_binary32.csv');
-avg64 = plot_shortest_roundtrip_digit_benchmark('../results/shortest_roundtrip_digits_benchmark_binary64.csv');
+plot_to_chars_shortest_roundtrip_uniform_benchmark('../results/to_chars_shortest_roundtrip_uniform_benchmark_binary32.csv', 32);
+plot_to_chars_shortest_roundtrip_uniform_benchmark('../results/to_chars_shortest_roundtrip_uniform_benchmark_binary64.csv', 64);
+avg32 = plot_digit_benchmark('../results/to_chars_shortest_roundtrip_digits_benchmark_binary32.csv');
+avg64 = plot_digit_benchmark('../results/to_chars_shortest_roundtrip_digits_benchmark_binary64.csv');

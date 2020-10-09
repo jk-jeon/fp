@@ -104,7 +104,6 @@ public:
 private:
 	benchmark_holder() : rg_(jkj::fp::detail::generate_correctly_seeded_mt19937_64()) {}
 
-	// Digits samples for [1] ~ [max_digits], general samples for [0]
 	std::vector<Float> samples_;
 	std::mt19937_64 rg_;
 	std::unordered_map<std::string, void(*)(Float, char*, int)> name_func_pairs_;
@@ -139,14 +138,9 @@ register_function_for_to_chars_fixed_precision_benchmark::register_function_for_
 #include <cstdlib>
 
 void run_matlab() {
-	struct launcher {
-		~launcher() {
-			std::system("matlab -nosplash -r \"cd('matlab');"
-				"plot_fixed_precision_benchmark(\'../results/fixed_precision_benchmark_binary32.csv\');"
-				"plot_fixed_precision_benchmark(\'../results/fixed_precision_benchmark_binary64.csv\');\"");
-		}
-	};
-	static launcher l;
+	std::system("matlab -nosplash -r \"cd('matlab');"
+		"plot_to_chars_fixed_precision_benchmark(\'../results/to_chars_fixed_precision_benchmark_binary32.csv\');"
+		"plot_to_chars_fixed_precision_benchmark(\'../results/to_chars_fixed_precision_benchmark_binary64.csv\');\"");
 }
 #endif
 
@@ -162,7 +156,7 @@ static void benchmark_test(std::string_view float_name, std::size_t number_of_sa
 	std::cout << "Benchmarking done.\n" << "Now writing to files...\n";
 
 	// Write benchmark results
-	auto filename = std::string("results/fixed_precision_benchmark_");
+	auto filename = std::string("results/to_chars_fixed_precision_benchmark_");
 	filename += float_name;
 	filename += ".csv";
 	std::ofstream out_file{ filename };
@@ -175,10 +169,6 @@ static void benchmark_test(std::string_view float_name, std::size_t number_of_sa
 				<< precision << "," << name_result_pair.second[precision] << "\n";
 		}
 	}
-
-#ifdef RUN_MATLAB
-	run_matlab();
-#endif
 }
 
 int main() {
@@ -208,4 +198,8 @@ int main() {
 			max_precision_double);
 		std::cout << "Done.\n\n\n";
 	}
+
+#ifdef RUN_MATLAB
+	run_matlab();
+#endif
 }

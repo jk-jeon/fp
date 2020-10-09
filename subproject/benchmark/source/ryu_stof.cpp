@@ -22,14 +22,14 @@ namespace {
 	float float_from_chars(std::string const& str)
 	{
 		float ret;
-		s2f_n(str.data(), str.length(), &ret);
+		s2f_n(str.data(), int(str.length()), &ret);
 		return ret;
 		
 	}
 	double double_from_chars(std::string const& str)
 	{
 		double ret;
-		s2d_n(str.data(), str.length(), &ret);
+		s2d_n(str.data(), int(str.length()), &ret);
 		return ret;
 	}
 

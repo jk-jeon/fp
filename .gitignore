@@ -457,23 +457,7 @@ MigrationBackup/
 .ionide/
 
 # End of https://www.toptal.com/developers/gitignore/api/clion+all,visualstudio
-/subproject/benchmark/results/uniform_benchmark_binary64.pdf
-/subproject/benchmark/results/uniform_benchmark_binary64.csv
-/subproject/benchmark/results/uniform_benchmark_binary32.pdf
-/subproject/benchmark/results/uniform_benchmark_binary32.csv
-/subproject/benchmark/results/digits_benchmark_binary64.pdf
-/subproject/benchmark/results/digits_benchmark_binary64.csv
-/subproject/benchmark/results/digits_benchmark_binary32.pdf
-/subproject/benchmark/results/digits_benchmark_binary32.csv
-/subproject/benchmark/results/fixed_precision_benchmark_binary32.pdf
-/subproject/benchmark/results/fixed_precision_benchmark_binary32.csv
-/subproject/benchmark/results/fixed_precision_benchmark_binary64.pdf
-/subproject/benchmark/results/fixed_precision_benchmark_binary64.csv
-/subproject/benchmark/results/shortest_roundtrip_uniform_benchmark_binary64.pdf
-/subproject/benchmark/results/shortest_roundtrip_uniform_benchmark_binary64.csv
-/subproject/benchmark/results/shortest_roundtrip_uniform_benchmark_binary32.pdf
-/subproject/benchmark/results/shortest_roundtrip_uniform_benchmark_binary32.csv
-/subproject/benchmark/results/shortest_roundtrip_digits_benchmark_binary64.pdf
-/subproject/benchmark/results/shortest_roundtrip_digits_benchmark_binary64.csv
-/subproject/benchmark/results/shortest_roundtrip_digits_benchmark_binary32.pdf
-/subproject/benchmark/results/shortest_roundtrip_digits_benchmark_binary32.csv
+/subproject/benchmark/results/from_chars_limited_precision_benchmark_binary32.csv
+/subproject/benchmark/results/from_chars_limited_precision_benchmark_binary64.csv
+/subproject/benchmark/results/from_chars_limited_precision_benchmark_binary32.pdf
+/subproject/benchmark/results/from_chars_limited_precision_benchmark_binary64.pdf
