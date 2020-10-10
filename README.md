@@ -26,7 +26,7 @@ Here is the list of algorithms that `fp` supports.
 By combining Dooly and a slight extension of Ryu-printf, it is possible to parse a floating-point number's decimal string representation of arbitrary length and obtain the best-approximating binary floating-point number. The resulting routine is way faster than the conventional methods, as shown in the [benchmark](https://github.com/jk-jeon/fp#unlimited-precision-decimal-to-binary-conversion-1). A short paper about this is in preparation.
 
 # Language Standard
-The library is targetting C++17 and actively using its features (e.g., if constexpr).
+The library is targetting C++17 and actively using its features (e.g., `if constexpr`).
 
 # Benchmark
 All benchmark results here are compiled with clang-cl + Visual C++ 16.7 on a machine with Windows 10 and Intel(R) Core(TM) i7-7700HQ CPU @2.80GHz. Benchmarks are not completely fair in the sense that exact formatting, error conditions, error handlings, etc. are different. Also, as all the implementations here are in the nanosecond regime, things like different inlining decisions can matter a lot.
