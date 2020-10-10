@@ -38,6 +38,7 @@ namespace jkj::fp {
 		jkj::fp::signed_decimal_fp<Float> decimal;
 		decimal.exponent = 0;
 		int digits = 0;
+		char const* next_to_decimal_dot_pos;
 		if (*begin == '-') {
 			decimal.is_negative = true;
 			++begin;
@@ -52,7 +53,7 @@ namespace jkj::fp {
 		}
 
 		if (*begin == '.') {
-			++begin;
+			next_to_decimal_dot_pos = ++begin;
 			assert(begin != end);
 			decimal.significand = 0;
 			goto after_decimal_point_label;
@@ -64,7 +65,7 @@ namespace jkj::fp {
 				goto convert_to_binary_label;
 			}
 			else if (*begin == '.') {
-				++begin;
+				next_to_decimal_dot_pos = ++begin;
 				goto after_decimal_point_label;
 			}
 			else if (*begin == 'e' || *begin == 'E') {
@@ -85,7 +86,7 @@ namespace jkj::fp {
 
 		for (; begin != end; ++begin) {
 			if (*begin == '.') {
-				++begin;
+				next_to_decimal_dot_pos = ++begin;
 				goto after_decimal_point_label;
 			}
 			else if (*begin == 'e' || *begin == 'E') {
@@ -105,6 +106,7 @@ namespace jkj::fp {
 	after_decimal_point_label:
 		for (; begin != end; ++begin) {
 			if (*begin == 'e' || *begin == 'E') {
+				decimal.exponent -= int(begin - next_to_decimal_dot_pos);
 				++begin;
 				goto after_e_label;
 			}
@@ -112,11 +114,11 @@ namespace jkj::fp {
 				assert(*begin >= '0' && *begin <= '9');
 				++digits;
 				assert(digits <= digit_limit);
-				--decimal.exponent;
 				decimal.significand *= 10;
 				decimal.significand += carrier_uint(*begin - '0');
 			}
 		}
+		decimal.exponent -= int(begin - next_to_decimal_dot_pos);
 		goto convert_to_binary_label;
 
 	after_e_label:

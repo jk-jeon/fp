@@ -63,7 +63,7 @@ public:
 
 		for (int precision = 0; precision < samples_.size(); ++precision) {
 			std::cout << "Benchmark for precision = " << precision <<
-				" with uniformly random " << float_name << "'s...\n";
+				" with random " << float_name << "'strings...\n";
 
 			for (auto const& name_func_pair : name_func_pairs_) {
 				auto& measured_times = out[name_func_pair.first];

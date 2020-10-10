@@ -207,5 +207,5 @@ int main() {
 
 #ifdef RUN_MATLAB
 	run_matlab();
-#endif;
+#endif
 }

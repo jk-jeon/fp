@@ -23,7 +23,7 @@
 static constexpr enum {
 	benchmark_no_trailing_zero,
 	benchmark_allow_trailing_zero
-} benchmark_kind = benchmark_allow_trailing_zero;
+} benchmark_kind = benchmark_no_trailing_zero;
 
 struct register_function_for_to_chars_shortest_roundtrip_benchmark {
 	register_function_for_to_chars_shortest_roundtrip_benchmark() = default;
