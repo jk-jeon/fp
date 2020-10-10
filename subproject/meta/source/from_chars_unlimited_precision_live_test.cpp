@@ -34,7 +34,7 @@ static void live_test()
 	while (true) {
 		std::cout << "Input: ";
 		std::cin >> str;
-		auto x = jkj::fp::from_chars_limited<Float>(str.data(), str.data() + str.length());
+		auto x = jkj::fp::from_chars_unlimited<Float>(str.data(), str.data() + str.length());
 		if constexpr (ieee754_format == jkj::fp::ieee754_format::binary32) {
 			f2s_buffered(x.to_float(), buffer);
 		}
@@ -54,11 +54,11 @@ int main()
 	} test = test_double;
 
 	if constexpr (test == test_float) {
-		std::cout << "[Start limited-precision parsing live test for binary32]\n";
+		std::cout << "[Start unlimited-precision parsing live test for binary32]\n";
 		live_test<float>();
 	}
 	else if constexpr (test == test_double) {
-		std::cout << "[Start limited-precision parsing live test for binary64]\n";
+		std::cout << "[Start unlimited-precision parsing live test for binary64]\n";
 		live_test<double>();
 	}
 }
