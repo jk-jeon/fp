@@ -227,28 +227,11 @@ namespace jkj::fp {
 			}
 			while (ptr != end) {
 				assert(*ptr >= '0' && *ptr <= '9');
+				// Assert that exponent never overflows.
+				assert(exponent + 1 <= std::numeric_limits<int>::max() / 10);
 				exponent *= 10;
 				exponent += (*ptr - '0');
 				++ptr;
-
-				if (exponent >= 1000) {
-					if (negative_exponent) {
-						if (is_negative) {
-							return ieee754_bits<Float>{ ieee754_traits<Float>::negative_zero() };
-						}
-						else {
-							return ieee754_bits<Float>{ ieee754_traits<Float>::positive_zero() };
-						}
-					}
-					else {
-						if (is_negative) {
-							return ieee754_bits<Float>{ ieee754_traits<Float>::negative_infinity() };
-						}
-						else {
-							return ieee754_bits<Float>{ ieee754_traits<Float>::positive_infinity() };
-						}
-					}
-				}
 			}
 
 			if (negative_exponent) {
@@ -334,11 +317,14 @@ namespace jkj::fp {
 			return f;
 		}
 
-		// Generate digits of the middle point.
+		// Generate digits of the right boundary point of the search interval.
+		// For the case of round-to-nearest, it is the middle point between
+		// the current number and the next smallest number.
 		ryu_printf<Float> digit_gen{ f, std::bool_constant<true>{} };
 
 		// Compare g (significand) times 10^(k + n * eta) to s (the boundary point),
-		// where k is the decimal exponent and n is the segment index.
+		// where k is the decimal exponent, n is the segment index,
+		// and eta is the segment length.
 		// Let d be the number of digits of g, then:
 		//  - if k + n * eta + d - 1 >= eta, then g * 10^(k + n * eta) > s.
 		//  - if k + n * eta + d <= 0, then g * 10^(k + n * eta) < s.
@@ -403,7 +389,7 @@ namespace jkj::fp {
 			}
 
 			if (significand32 > digit_gen.current_segment()) {
-				// Boundaryle point is strictly smaller.
+				// Boundary point is strictly smaller.
 				++f.u;
 				return f;
 			}
