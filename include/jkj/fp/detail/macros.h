@@ -28,7 +28,7 @@
 
 #if defined(__GNUC__) || defined(__clang__)
 #define JKJ_SAFEBUFFERS
-#define JKJ_FORCEINLINE __attribute__((always_inline))
+#define JKJ_FORCEINLINE inline __attribute__((always_inline))
 #define JKJ_EMPTY_BASE
 #elif defined(_MSC_VER)
 #define JKJ_SAFEBUFFERS __declspec(safebuffers)	// Suppresses needless buffer overrun check.
