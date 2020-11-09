@@ -20,3 +20,4 @@ if (MSVC)
               /Zi /permissive-
               $<$<CONFIG:Release>:/GL>)
 endif()
+set_target_properties(schubfach PROPERTIES FOLDER fp/extern)

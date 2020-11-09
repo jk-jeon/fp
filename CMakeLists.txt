@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 project(jkj_fp
         VERSION 0.0.1
         LANGUAGES CXX)
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 # ---- Includes ----
 
@@ -69,6 +70,7 @@ target_include_directories(jkj_fp_charconv
         "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>")
 
 target_compile_features(jkj_fp_charconv PUBLIC cxx_std_17)
+set_target_properties(jkj_fp_charconv PROPERTIES FOLDER fp)
 
 # ---- Install ----
 
