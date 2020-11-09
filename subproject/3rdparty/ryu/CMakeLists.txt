@@ -23,3 +23,4 @@ if (MSVC)
     target_compile_options(ryu PUBLIC
               /Zi $<$<CONFIG:Release>:/GL>)
 endif()
+set_target_properties(ryu PROPERTIES FOLDER fp/extern)

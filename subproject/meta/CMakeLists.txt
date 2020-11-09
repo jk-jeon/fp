@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 
 project(jkj_fp_meta LANGUAGES CXX)
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 include(FetchContent)
 if (NOT TARGET jkj_fp)
@@ -41,6 +42,7 @@ function(meta_exe NAME)
       set_target_properties(${NAME} PROPERTIES 
             VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}")
   endif()
+  set_target_properties(${NAME} PROPERTIES FOLDER fp/meta)
 endfunction()
 
 meta_exe(to_chars_fixed_precision_live_test jkj_fp::charconv)
