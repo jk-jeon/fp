@@ -69,11 +69,14 @@ namespace jkj::fp {
 				std::uint32_t n32;
 				if constexpr (value_bits<UInt> > 32) {
 					if ((n >> 32) != 0) {
-						count -= 32;
+						count -= 33;
 						n32 = std::uint32_t(n >> 32);
 					}
-					else if (n32 == 0) {
+					else {
 						n32 = std::uint32_t(n);
+						if (n32 != 0) {
+							count -= 1;
+						}
 					}
 				}
 				else {
