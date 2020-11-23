@@ -22,3 +22,4 @@ if (MSVC)
               $<$<NOT:$<CXX_COMPILER_ID:Clang>>:/experimental:newLambdaProcessor>
               $<$<CONFIG:Release>:/GL>)
 endif()
+set_target_properties(grisu_exact PROPERTIES FOLDER fp/extern)
