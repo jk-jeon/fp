@@ -1,3 +1,7 @@
+# !!! Note !!!
+**This library has never been fleshed out to be really usable in practice, yet it is not in development right now. I will (hopefully) work on it one day but cannot be sure when it will be. The repository for the Dragonbox algorithm ([here](https://github.com/jk-jeon/dragonbox)) is actively maintained, on the other hand.**
+
+
 # `fp` Library
 `fp` is a binary-to-decimal and decimal-to-binary conversion library for IEEE-754 floating-point numbers.
 
